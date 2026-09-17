@@ -168,10 +168,62 @@ export function popularDadosDeExemplo() {
   ];
   salvarColecao(CHAVES.clientes, clientes);
 
-  salvarColecao(CHAVES.sessoes, []);
-  salvarColecao(CHAVES.pacotes, []);
-  salvarColecao(CHAVES.pagamentos, []);
+  // Exemplos para a demonstração: uma sessão futura e um pacote em andamento
+  const dias = proximosDiasUteis(3);
+  const ana = clientes[0]!;
+  const pacoteExemplo: Pacote = {
+    id: gerarId(),
+    clienteId: ana.id,
+    procedimentoNome: "Depilação a Laser",
+    quantidadeSessoes: 6,
+    saldoSessoes: 5,
+    valorTotal: 1080,
+    valorPago: 400,
+  };
+  salvarColecao(CHAVES.sessoes, [
+    {
+      id: gerarId(),
+      clienteId: ana.id,
+      profissionalId: profissionais[0]!.id,
+      procedimentoNome: "Limpeza de Pele",
+      data: dias[0]!,
+      horario: "09:00",
+      status: "agendada",
+      pacoteId: null,
+    },
+    {
+      id: gerarId(),
+      clienteId: clientes[1]!.id,
+      profissionalId: profissionais[2]!.id,
+      procedimentoNome: "Massagem Modeladora",
+      data: dias[1]!,
+      horario: "15:00",
+      status: "agendada",
+      pacoteId: null,
+    },
+    {
+      id: gerarId(),
+      clienteId: ana.id,
+      profissionalId: profissionais[1]!.id,
+      procedimentoNome: "Depilação a Laser",
+      data: dias[2]!,
+      horario: "10:30",
+      status: "agendada",
+      pacoteId: pacoteExemplo.id,
+    },
+  ] as Sessao[]);
+  salvarColecao(CHAVES.pacotes, [pacoteExemplo]);
+  salvarColecao(CHAVES.pagamentos, [
+    {
+      id: gerarId(),
+      pacoteId: pacoteExemplo.id,
+      valor: 400,
+      formaPagamento: "pix",
+      data: new Date().toISOString().slice(0, 10),
+    },
+  ] as Pagamento[]);
   salvarColecao(CHAVES.atendimentos, []);
+
 }
 
 const HORARIOS_DIA = [
