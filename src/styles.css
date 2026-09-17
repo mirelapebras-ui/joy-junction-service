@@ -47,6 +47,10 @@
   --color-lilac: var(--lilac);
   --color-orchid: var(--orchid);
   --color-ink: var(--ink);
+  --color-sage: var(--sage);
+  --color-sage-soft: var(--sage-soft);
+  --color-sage-deep: var(--sage-deep);
+  --color-gold: var(--gold);
 
   /* Fonts */
   --font-serif: var(--font-serif-display);
@@ -85,6 +89,10 @@
   --lilac: #b9a8dc;
   --orchid: #9d7bc8;
   --ink: #3d2a44;
+  --sage: #9bc08f;
+  --sage-soft: #cfe0c6;
+  --sage-deep: #4f6b47;
+  --gold: #c79a45;
 
   --font-serif-display: 'DM Serif Display', serif;
   --font-body-sans: 'Fira Sans', sans-serif;

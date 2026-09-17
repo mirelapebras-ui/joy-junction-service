@@ -10,33 +10,102 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AcessoRouteImport } from './routes/acesso'
+import { Route as ClienteRouteImport } from './routes/cliente'
+import { Route as ProcedimentosRouteImport } from './routes/procedimentos'
+import { Route as ProfissionalRouteImport } from './routes/profissional'
+import { Route as SecretariaRouteImport } from './routes/secretaria'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AcessoRoute = AcessoRouteImport.update({
+  id: '/acesso',
+  path: '/acesso',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClienteRoute = ClienteRouteImport.update({
+  id: '/cliente',
+  path: '/cliente',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProcedimentosRoute = ProcedimentosRouteImport.update({
+  id: '/procedimentos',
+  path: '/procedimentos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfissionalRoute = ProfissionalRouteImport.update({
+  id: '/profissional',
+  path: '/profissional',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SecretariaRoute = SecretariaRouteImport.update({
+  id: '/secretaria',
+  path: '/secretaria',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/acesso': typeof AcessoRoute
+  '/cliente': typeof ClienteRoute
+  '/procedimentos': typeof ProcedimentosRoute
+  '/profissional': typeof ProfissionalRoute
+  '/secretaria': typeof SecretariaRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/acesso': typeof AcessoRoute
+  '/cliente': typeof ClienteRoute
+  '/procedimentos': typeof ProcedimentosRoute
+  '/profissional': typeof ProfissionalRoute
+  '/secretaria': typeof SecretariaRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/acesso': typeof AcessoRoute
+  '/cliente': typeof ClienteRoute
+  '/procedimentos': typeof ProcedimentosRoute
+  '/profissional': typeof ProfissionalRoute
+  '/secretaria': typeof SecretariaRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/acesso'
+    | '/cliente'
+    | '/procedimentos'
+    | '/profissional'
+    | '/secretaria'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/acesso'
+    | '/cliente'
+    | '/procedimentos'
+    | '/profissional'
+    | '/secretaria'
+  id:
+    | '__root__'
+    | '/'
+    | '/acesso'
+    | '/cliente'
+    | '/procedimentos'
+    | '/profissional'
+    | '/secretaria'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AcessoRoute: typeof AcessoRoute
+  ClienteRoute: typeof ClienteRoute
+  ProcedimentosRoute: typeof ProcedimentosRoute
+  ProfissionalRoute: typeof ProfissionalRoute
+  SecretariaRoute: typeof SecretariaRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +117,51 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/acesso': {
+      id: '/acesso'
+      path: '/acesso'
+      fullPath: '/acesso'
+      preLoaderRoute: typeof AcessoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cliente': {
+      id: '/cliente'
+      path: '/cliente'
+      fullPath: '/cliente'
+      preLoaderRoute: typeof ClienteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/procedimentos': {
+      id: '/procedimentos'
+      path: '/procedimentos'
+      fullPath: '/procedimentos'
+      preLoaderRoute: typeof ProcedimentosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profissional': {
+      id: '/profissional'
+      path: '/profissional'
+      fullPath: '/profissional'
+      preLoaderRoute: typeof ProfissionalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/secretaria': {
+      id: '/secretaria'
+      path: '/secretaria'
+      fullPath: '/secretaria'
+      preLoaderRoute: typeof SecretariaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AcessoRoute: AcessoRoute,
+  ClienteRoute: ClienteRoute,
+  ProcedimentosRoute: ProcedimentosRoute,
+  ProfissionalRoute: ProfissionalRoute,
+  SecretariaRoute: SecretariaRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

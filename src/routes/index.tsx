@@ -1,20 +1,21 @@
-import { createFileRoute } from "@tanstack/react-router";
-import heroSpa from "@/assets/hero-spa.jpg";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import heroCamelia from "@/assets/camelia-hero.jpg";
+import { CameliaBloom, SiteFooter, SiteNav } from "@/components/camelia";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Vênus · Agendamento online" },
+      { title: "Camélia Estética · Cuidado que floresce em você" },
       {
         name: "description",
         content:
-          "Reserve seu horário em segundos. Escolha o serviço, o profissional e o melhor horário — sem ligações, sem espera, sem complicação.",
+          "Agende limpeza de pele, depilação a laser e massagem modeladora na Camélia Estética. Horários livres na hora, sem ligar nem esperar resposta.",
       },
-      { property: "og:title", content: "Vênus · Agendamento online" },
+      { property: "og:title", content: "Camélia Estética · Agendamento online" },
       {
         property: "og:description",
         content:
-          "Reserve seu horário em segundos. Escolha o serviço, o profissional e o melhor horário.",
+          "Sessões avulsas ou em pacote com profissionais especializadas e uma agenda que se organiza sozinha.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -23,217 +24,175 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const services = [
+const passos = [
   {
-    icon: "✦",
-    iconBg: "bg-petal/30",
-    title: "Corte & styling",
-    description: "Acabamento impecável com um profissional sênior.",
-    details: "45 min · R$ 120",
+    numero: "01",
+    titulo: "Escolha o procedimento",
+    texto: "Veja duração e valor de cada sessão antes de decidir.",
   },
   {
-    icon: "✧",
-    iconBg: "bg-lilac/30",
-    title: "Coloração",
-    description: "Loiro, morena iluminada ou tonalização.",
-    details: "90 min · R$ 250",
+    numero: "02",
+    titulo: "Pegue o horário livre",
+    texto: "A agenda mostra apenas horários realmente disponíveis.",
   },
   {
-    icon: "❋",
-    iconBg: "bg-rose-petal/50",
-    title: "Manicure & spa",
-    description: "Mãos, pés e hidratação relaxante.",
-    details: "60 min · R$ 90",
+    numero: "03",
+    titulo: "Confirme e pronto",
+    texto: "Cancele ou remarque sozinha, com até 2 horas de antecedência.",
+  },
+];
+
+const destaques = [
+  {
+    titulo: "Profissionais especializadas",
+    texto: "Cada procedimento é conduzido por quem é dedicada exclusivamente a ele.",
+  },
+  {
+    titulo: "Pacotes com saldo visível",
+    texto: "Acompanhe quantas sessões ainda tem e quanto falta pagar.",
+  },
+  {
+    titulo: "Agenda sempre atualizada",
+    texto: "Sem conflito de horário: dois atendimentos nunca caem no mesmo espaço.",
   },
 ];
 
 function Index() {
   return (
-    <div className="min-h-screen bg-blush text-ink" style={{ fontFamily: "var(--font-body-sans)" }}>
-      {/* Nav */}
-      <nav className="flex items-center justify-between px-8 py-5 bg-blush border-b border-rose-petal/60">
-        <div className="text-2xl text-ink" style={{ fontFamily: "var(--font-serif-display)" }}>
-          Vênus
-        </div>
-        <ul className="hidden md:flex items-center gap-8 text-sm text-ink/70">
-          <li>
-            <a href="#servicos" className="hover:text-orchid transition-colors">
-              Serviços
-            </a>
-          </li>
-          <li>
-            <a href="#profissionais" className="hover:text-orchid transition-colors">
-              Profissionais
-            </a>
-          </li>
-          <li>
-            <a href="#sobre" className="hover:text-orchid transition-colors">
-              Sobre
-            </a>
-          </li>
-        </ul>
-        <div className="flex items-center gap-3">
-          <button className="px-4 py-2 text-sm text-ink/70 hover:text-ink transition-colors">
-            Entrar
-          </button>
-          <button className="px-5 py-2.5 text-sm font-medium text-white bg-orchid rounded-full hover:bg-mauve transition-colors">
-            Agendar
-          </button>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-blush font-body text-ink">
+      <SiteNav current="inicio" />
 
       {/* Hero */}
-      <section className="relative bg-blush px-8 pt-16 pb-24">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-24 -right-16 w-96 h-96 rounded-full bg-lilac/40" />
-          <div className="absolute top-40 left-1/2 w-72 h-72 rounded-full bg-rose-petal/50" />
+      <section className="relative overflow-hidden px-6 pt-14 pb-20 md:px-10">
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -top-28 -right-20 h-96 w-96 rounded-full bg-lilac/30 blur-2xl" />
+          <div className="absolute top-52 -left-16 h-72 w-72 rounded-full bg-rose-petal/60 blur-2xl" />
         </div>
-        <div className="relative max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
+        <div className="relative mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-2">
           <div>
-            <span className="inline-block px-3 py-1 text-xs uppercase tracking-[0.15em] text-orchid bg-lilac/20 rounded-full">
+            <span className="inline-block rounded-full bg-lilac/20 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-orchid">
               Agendamento online
             </span>
-            <h1
-              className="text-6xl leading-[1.05] text-ink mt-5"
-              style={{ fontFamily: "var(--font-serif-display)" }}
-            >
-              Reserve seu horário em{" "}
-              <span className="text-orchid italic">segundos</span>.
+            <h1 className="mt-5 font-serif text-5xl leading-[1.05] text-ink md:text-6xl">
+              Cuidado que floresce em{" "}
+              <span className="text-orchid italic">você</span>.
             </h1>
-            <p className="text-lg text-ink/60 mt-5 max-w-md">
-              Escolha o serviço, o profissional e o melhor horário. Sem ligações, sem
-              espera, sem complicação.
+            <p className="mt-5 max-w-md text-lg text-ink/60">
+              Sessões avulsas ou em pacote, com profissionais especializadas e uma agenda que
+              se organiza sozinha. Marque seu horário em poucos minutos, sem precisar ligar ou
+              esperar resposta no WhatsApp.
             </p>
-            <div className="flex items-center gap-4 mt-8">
-              <button className="px-7 py-3.5 text-sm font-medium text-white bg-orchid rounded-full hover:bg-mauve transition-colors">
-                Ver horários livres
-              </button>
-              <button className="px-7 py-3.5 text-sm font-medium text-ink bg-rose-petal rounded-full hover:bg-petal/60 transition-colors">
-                Como funciona
-              </button>
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <Link
+                to="/acesso"
+                className="rounded-full bg-orchid px-7 py-3.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-mauve"
+              >
+                Agendar meu horário
+              </Link>
+              <Link
+                to="/procedimentos"
+                className="rounded-full bg-rose-petal px-7 py-3.5 text-sm font-medium text-ink transition-colors hover:bg-petal/60"
+              >
+                Ver procedimentos
+              </Link>
             </div>
+            <dl className="mt-10 grid max-w-md grid-cols-3 gap-4">
+              {[
+                ["3", "profissionais especializadas"],
+                ["7", "dias de agenda aberta"],
+                ["2h", "de antecedência para remarcar"],
+              ].map(([num, label]) => (
+                <div key={label}>
+                  <dt className="font-serif text-3xl text-orchid">{num}</dt>
+                  <dd className="mt-1 text-xs leading-snug text-ink/55">{label}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
           <div className="relative">
             <img
-              src={heroSpa}
-              alt="Interior de spa com tons de rosa e lilás, decoração minimalista e calma"
+              src={heroCamelia}
+              alt="Sala de atendimento da Camélia Estética com maca branca, toalhas e camélias rosa"
               width={1200}
-              height={1000}
-              className="w-full aspect-[6/5] object-cover rounded-3xl outline-1 -outline-offset-1 outline-black/5"
+              height={1008}
+              className="w-full rounded-[2rem] object-cover shadow-xl shadow-mauve/20 outline-1 -outline-offset-1 outline-black/5"
             />
-            <div className="absolute -bottom-6 -left-6 w-64 p-5 bg-white rounded-2xl shadow-xl shadow-lilac/30">
-              <div className="text-xs text-ink/50" style={{ fontFamily: "var(--font-body-sans)" }}>
-                Próximo horário
-              </div>
-              <div
-                className="text-2xl text-ink mt-1"
-                style={{ fontFamily: "var(--font-serif-display)" }}
-              >
-                Hoje · 14h30
-              </div>
-              <div
-                className="text-xs text-orchid mt-1"
-                style={{ fontFamily: "var(--font-body-sans)" }}
-              >
-                Corte & styling · Marina
-              </div>
+            <div className="absolute -bottom-6 -left-4 w-60 rounded-2xl bg-card p-5 shadow-xl shadow-lilac/30 md:-left-8">
+              <p className="text-xs text-ink/50">Próximo horário livre</p>
+              <p className="mt-1 font-serif text-2xl text-ink">Amanhã · 09h00</p>
+              <p className="mt-1 text-xs text-orchid">Limpeza de Pele · Bianca Rocha</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Services */}
-      <section id="servicos" className="bg-white px-8 py-20">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-end justify-between mb-10 flex-wrap gap-4">
-            <div>
-              <h2
-                className="text-4xl text-ink"
-                style={{ fontFamily: "var(--font-serif-display)" }}
-              >
-                Nossos serviços
-              </h2>
-              <p className="text-ink/50 mt-2 text-sm">
-                Toque em um card para ver os horários disponíveis.
-              </p>
-            </div>
-            <a
-              href="#"
-              className="text-sm text-orchid hover:underline"
-              style={{ fontFamily: "var(--font-body-sans)" }}
-            >
-              Ver todos
-            </a>
-          </div>
-          <div className="grid md:grid-cols-3 gap-6">
-            {services.map((service) => (
+      {/* Como funciona */}
+      <section className="bg-card px-6 py-20 md:px-10">
+        <div className="mx-auto max-w-6xl">
+          <h2 className="font-serif text-4xl text-ink">Como funciona</h2>
+          <p className="mt-2 text-sm text-ink/55">
+            Três passos entre a vontade de se cuidar e a sessão marcada.
+          </p>
+          <div className="mt-10 grid gap-6 md:grid-cols-3">
+            {passos.map((p) => (
               <div
-                key={service.title}
-                className="p-6 bg-blush rounded-2xl border border-rose-petal/60 hover:shadow-lg hover:shadow-rose-petal/40 transition-shadow"
+                key={p.numero}
+                className="rounded-3xl border border-rose-petal/70 bg-blush p-7 transition-shadow hover:shadow-lg hover:shadow-rose-petal/50"
               >
-                <div
-                  className={`w-11 h-11 rounded-xl ${service.iconBg} grid place-items-center text-xl`}
-                >
-                  {service.icon}
-                </div>
-                <h3
-                  className="text-xl text-ink mt-4"
-                  style={{ fontFamily: "var(--font-serif-display)" }}
-                >
-                  {service.title}
-                </h3>
-                <p className="text-sm text-ink/55 mt-2">{service.description}</p>
-                <div className="flex items-center justify-between mt-6">
-                  <span className="text-sm text-orchid font-medium">{service.details}</span>
-                  <span className="text-xs text-white bg-orchid px-3 py-1 rounded-full">
-                    Agendar
-                  </span>
-                </div>
+                <span className="font-serif text-3xl text-petal">{p.numero}</span>
+                <h3 className="mt-3 font-serif text-xl text-ink">{p.titulo}</h3>
+                <p className="mt-2 text-sm text-ink/55">{p.texto}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Email */}
-      <section className="bg-lilac/15 px-8 py-16">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+      {/* Por que a Camélia */}
+      <section className="bg-sage-soft/25 px-6 py-20 md:px-10">
+        <div className="mx-auto grid max-w-6xl items-center gap-12 md:grid-cols-[280px_1fr]">
+          <CameliaBloom className="mx-auto w-56" />
           <div>
-            <h3
-              className="text-3xl text-ink"
-              style={{ fontFamily: "var(--font-serif-display)" }}
+            <h2 className="font-serif text-4xl text-ink">Por que a Camélia</h2>
+            <div className="mt-6 space-y-5">
+              {destaques.map((d) => (
+                <div key={d.titulo} className="flex gap-4">
+                  <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-mauve" />
+                  <div>
+                    <h3 className="font-serif text-xl text-ink">{d.titulo}</h3>
+                    <p className="mt-1 text-sm text-ink/60">{d.texto}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Link
+              to="/procedimentos"
+              className="mt-8 inline-block rounded-full border border-mauve/60 px-6 py-3 text-sm text-ink transition-colors hover:bg-rose-petal/50"
             >
-              Sem tempo para escolher?
-            </h3>
-            <p className="text-ink/55 mt-2">Receba um lembrete e agende com um toque.</p>
-          </div>
-          <div className="flex items-center gap-3 w-full md:w-auto">
-            <input
-              type="email"
-              placeholder="Seu melhor e-mail"
-              className="flex-1 md:w-72 px-5 py-3.5 text-sm bg-white rounded-full border border-rose-petal outline-none focus:border-orchid transition-colors"
-            />
-            <button className="px-6 py-3.5 text-sm font-medium text-white bg-orchid rounded-full hover:bg-mauve transition-colors whitespace-nowrap">
-              Quero agendar
-            </button>
+              Conhecer os procedimentos
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-ink px-8 py-8">
-        <div className="max-w-6xl mx-auto flex items-center justify-between flex-wrap gap-4">
-          <span
-            className="text-xl text-blush"
-            style={{ fontFamily: "var(--font-serif-display)" }}
+      {/* CTA */}
+      <section className="bg-blush px-6 py-20 md:px-10">
+        <div className="mx-auto max-w-4xl rounded-[2rem] bg-ink px-8 py-14 text-center">
+          <h2 className="font-serif text-4xl text-blush">Sua próxima sessão começa aqui</h2>
+          <p className="mx-auto mt-3 max-w-md text-sm text-blush/65">
+            Entre com seu CPF ou crie sua conta em menos de um minuto e escolha o horário que
+            couber na sua rotina.
+          </p>
+          <Link
+            to="/acesso"
+            className="mt-8 inline-block rounded-full bg-petal px-8 py-3.5 text-sm font-medium text-ink transition-colors hover:bg-rose-petal"
           >
-            Vênus
-          </span>
-          <span className="text-xs text-blush/50">
-            © 2024 · Feito com carinho
-          </span>
+            Entrar ou criar conta
+          </Link>
         </div>
-      </footer>
+      </section>
+
+      <SiteFooter />
     </div>
   );
 }
