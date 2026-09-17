@@ -1,0 +1,439 @@
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useCallback, useEffect, useState } from "react";
+import {
+  buscarClientePorCpf,
+  cancelarSessao,
+  formatarData,
+  formatarMoeda,
+  getSessao,
+  limparSessao,
+  listarProcedimentos,
+  meusPacotes,
+  popularDadosDeExemplo,
+  registrarPagamento,
+  relatorioMensal,
+  venderPacote,
+  visualizarAgenda,
+  type PacoteDetalhado,
+  type Procedimento,
+  type Sessao_Usuario,
+  type SessaoDetalhada,
+} from "@/lib/db";
+import {
+  AppTopbar,
+  Badge,
+  Campo,
+  Mensagem,
+  Panel,
+  Vazio,
+  inputClass,
+} from "@/components/camelia";
+
+export const Route = createFileRoute("/secretaria")({
+  head: () => ({
+    meta: [
+      { title: "Recepção · Camélia Estética" },
+      {
+        name: "description",
+        content:
+          "Painel da recepção da Camélia Estética: agenda geral do dia, venda de pacotes, registro de pagamentos e relatório mensal de atendimentos.",
+      },
+      { property: "og:title", content: "Recepção · Camélia Estética" },
+      {
+        property: "og:description",
+        content: "Agenda geral, venda de pacotes, pagamentos e relatório mensal.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: AreaSecretaria,
+});
+
+function AreaSecretaria() {
+  const navigate = useNavigate();
+  const [usuario, setUsuario] = useState<Sessao_Usuario | null>(null);
+  const [agenda, setAgenda] = useState<SessaoDetalhada[]>([]);
+  const [procedimentos, setProcedimentos] = useState<Procedimento[]>([]);
+
+  const [cpf, setCpf] = useState("");
+  const [cliente, setCliente] = useState<{ id: string; nome: string } | null>(null);
+  const [pacotesCliente, setPacotesCliente] = useState<PacoteDetalhado[]>([]);
+  const [msgCliente, setMsgCliente] = useState<{
+    texto: string;
+    tipo: "erro" | "sucesso";
+  } | null>(null);
+
+  const [pacote, setPacote] = useState({
+    procedimentoNome: "",
+    quantidadeSessoes: "",
+    valorTotal: "",
+    entrada: "",
+    formaPagamento: "pix",
+  });
+
+  const [pagamento, setPagamento] = useState({
+    pacoteId: "",
+    valor: "",
+    formaPagamento: "pix",
+  });
+
+  const [mes, setMes] = useState(new Date().toISOString().slice(0, 7));
+  const [relatorio, setRelatorio] = useState<ReturnType<typeof relatorioMensal> | null>(null);
+
+  const recarregarAgenda = useCallback((u: Sessao_Usuario) => {
+    setAgenda(visualizarAgenda(u));
+  }, []);
+
+  useEffect(() => {
+    popularDadosDeExemplo();
+    const s = getSessao();
+    if (!s || s.role !== "secretaria") {
+      navigate({ to: "/acesso" });
+      return;
+    }
+    setUsuario(s);
+    setProcedimentos(listarProcedimentos());
+    recarregarAgenda(s);
+  }, [navigate, recarregarAgenda]);
+
+  if (!usuario) return null;
+
+  function buscar() {
+    setMsgCliente(null);
+    setCliente(null);
+    setPacotesCliente([]);
+    try {
+      const encontrado = buscarClientePorCpf(cpf.trim());
+      setCliente(encontrado);
+      setPacotesCliente(meusPacotes(encontrado.id));
+    } catch (err) {
+      setMsgCliente({ texto: (err as Error).message, tipo: "erro" });
+    }
+  }
+
+  function vender() {
+    if (!cliente) return;
+    setMsgCliente(null);
+    try {
+      venderPacote({
+        clienteId: cliente.id,
+        procedimentoNome: pacote.procedimentoNome,
+        quantidadeSessoes: pacote.quantidadeSessoes,
+        valorTotal: pacote.valorTotal,
+        ...(pacote.entrada
+          ? {
+              pagamentoInicial: {
+                valor: Number(pacote.entrada),
+                formaPagamento: pacote.formaPagamento,
+                data: new Date().toISOString().slice(0, 10),
+              },
+            }
+          : {}),
+      });
+
+      setMsgCliente({ texto: "Pacote cadastrado com sucesso.", tipo: "sucesso" });
+      setPacote({
+        procedimentoNome: "",
+        quantidadeSessoes: "",
+        valorTotal: "",
+        entrada: "",
+        formaPagamento: "pix",
+      });
+      setPacotesCliente(meusPacotes(cliente.id));
+    } catch (err) {
+      setMsgCliente({ texto: (err as Error).message, tipo: "erro" });
+    }
+  }
+
+  function pagar() {
+    if (!cliente) return;
+    setMsgCliente(null);
+    try {
+      registrarPagamento({
+        pacoteId: pagamento.pacoteId,
+        valor: Number(pagamento.valor),
+        formaPagamento: pagamento.formaPagamento,
+        data: new Date().toISOString().slice(0, 10),
+      });
+      setMsgCliente({ texto: "Pagamento registrado.", tipo: "sucesso" });
+      setPagamento({ pacoteId: "", valor: "", formaPagamento: "pix" });
+      setPacotesCliente(meusPacotes(cliente.id));
+    } catch (err) {
+      setMsgCliente({ texto: (err as Error).message, tipo: "erro" });
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-blush font-body text-ink">
+      <AppTopbar
+        subtitulo="Recepção"
+        nome={usuario.nome}
+        onSair={() => {
+          limparSessao();
+          navigate({ to: "/" });
+        }}
+      />
+
+      <main className="mx-auto grid max-w-6xl gap-6 px-6 py-8 md:px-10 lg:grid-cols-2">
+        <Panel titulo="Agenda geral">
+          {agenda.length === 0 ? (
+            <Vazio>Nenhuma sessão ativa na agenda.</Vazio>
+          ) : (
+            <ul className="max-h-[26rem] space-y-3 overflow-y-auto pr-1">
+              {agenda.map((s) => (
+                <li
+                  key={s.id}
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-rose-petal/60 bg-blush/60 px-4 py-3"
+                >
+                  <div>
+                    <p className="font-serif text-lg text-ink">
+                      {formatarData(s.data)} às {s.horario}
+                    </p>
+                    <p className="text-sm text-ink/55">
+                      {s.nomeCliente} · {s.procedimentoNome} · {s.nomeProfissional}
+                    </p>
+                    <span className="mt-1 inline-block">
+                      <Badge status={s.status} />
+                    </span>
+                  </div>
+                  {s.status === "agendada" && (
+                    <button
+                      onClick={() => {
+                        try {
+                          cancelarSessao(s.id, usuario!);
+                          recarregarAgenda(usuario!);
+                        } catch (err) {
+                          setMsgCliente({ texto: (err as Error).message, tipo: "erro" });
+                        }
+                      }}
+                      className="rounded-full border border-destructive/40 px-3 py-1.5 text-xs text-destructive transition-colors hover:bg-destructive/10"
+                    >
+                      Cancelar
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </Panel>
+
+        <div className="space-y-6">
+          <Panel titulo="Cliente">
+            <div className="flex gap-2">
+              <input
+                className={inputClass}
+                placeholder="CPF do cliente"
+                value={cpf}
+                onChange={(e) => setCpf(e.target.value)}
+              />
+              <button
+                onClick={buscar}
+                className="shrink-0 rounded-full bg-orchid px-5 text-sm font-medium text-primary-foreground transition-colors hover:bg-mauve"
+              >
+                Buscar
+              </button>
+            </div>
+
+            {cliente && (
+              <>
+                <p className="mt-4 rounded-2xl bg-lilac/15 px-4 py-3 text-sm text-ink">
+                  Cliente selecionada: <strong>{cliente.nome}</strong>
+                </p>
+
+                <h3 className="mt-6 mb-3 font-serif text-xl text-ink">Vender pacote</h3>
+                <Campo label="Procedimento">
+                  <select
+                    className={inputClass}
+                    value={pacote.procedimentoNome}
+                    onChange={(e) =>
+                      setPacote({ ...pacote, procedimentoNome: e.target.value })
+                    }
+                  >
+                    <option value="">Selecione</option>
+                    {procedimentos.map((p) => (
+                      <option key={p.id} value={p.nome}>
+                        {p.nome}
+                      </option>
+                    ))}
+                  </select>
+                </Campo>
+                <div className="grid grid-cols-2 gap-3">
+                  <Campo label="Sessões">
+                    <input
+                      className={inputClass}
+                      type="number"
+                      min="1"
+                      value={pacote.quantidadeSessoes}
+                      onChange={(e) =>
+                        setPacote({ ...pacote, quantidadeSessoes: e.target.value })
+                      }
+                    />
+                  </Campo>
+                  <Campo label="Valor total (R$)">
+                    <input
+                      className={inputClass}
+                      type="number"
+                      min="0"
+                      value={pacote.valorTotal}
+                      onChange={(e) => setPacote({ ...pacote, valorTotal: e.target.value })}
+                    />
+                  </Campo>
+                  <Campo label="Entrada (R$)">
+                    <input
+                      className={inputClass}
+                      type="number"
+                      min="0"
+                      value={pacote.entrada}
+                      onChange={(e) => setPacote({ ...pacote, entrada: e.target.value })}
+                    />
+                  </Campo>
+                  <Campo label="Forma de pagamento">
+                    <select
+                      className={inputClass}
+                      value={pacote.formaPagamento}
+                      onChange={(e) =>
+                        setPacote({ ...pacote, formaPagamento: e.target.value })
+                      }
+                    >
+                      <option value="pix">Pix</option>
+                      <option value="cartão">Cartão</option>
+                      <option value="dinheiro">Dinheiro</option>
+                    </select>
+                  </Campo>
+                </div>
+                <button
+                  onClick={vender}
+                  className="w-full rounded-full bg-orchid py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-mauve"
+                >
+                  Cadastrar pacote
+                </button>
+
+                <h3 className="mt-8 mb-3 font-serif text-xl text-ink">
+                  Pacotes desta cliente
+                </h3>
+                {pacotesCliente.length === 0 ? (
+                  <Vazio>Nenhum pacote cadastrado.</Vazio>
+                ) : (
+                  <ul className="space-y-2 text-sm">
+                    {pacotesCliente.map((p) => (
+                      <li
+                        key={p.id}
+                        className="rounded-2xl border border-rose-petal/60 bg-blush/60 px-4 py-3"
+                      >
+                        <p className="text-ink">{p.procedimentoNome}</p>
+                        <p className="text-ink/55">
+                          {p.saldoSessoes} de {p.quantidadeSessoes} sessões ·{" "}
+                          {formatarMoeda(p.valorPago)} pagos de{" "}
+                          {formatarMoeda(p.valorTotal)}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                <h3 className="mt-8 mb-3 font-serif text-xl text-ink">
+                  Registrar pagamento
+                </h3>
+                <Campo label="Pacote">
+                  <select
+                    className={inputClass}
+                    value={pagamento.pacoteId}
+                    onChange={(e) =>
+                      setPagamento({ ...pagamento, pacoteId: e.target.value })
+                    }
+                  >
+                    <option value="">Selecione</option>
+                    {pacotesCliente
+                      .filter((p) => p.saldoDevedor > 0)
+                      .map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.procedimentoNome} — falta {formatarMoeda(p.saldoDevedor)}
+                        </option>
+                      ))}
+                  </select>
+                </Campo>
+                <div className="grid grid-cols-2 gap-3">
+                  <Campo label="Valor (R$)">
+                    <input
+                      className={inputClass}
+                      type="number"
+                      min="0"
+                      value={pagamento.valor}
+                      onChange={(e) => setPagamento({ ...pagamento, valor: e.target.value })}
+                    />
+                  </Campo>
+                  <Campo label="Forma">
+                    <select
+                      className={inputClass}
+                      value={pagamento.formaPagamento}
+                      onChange={(e) =>
+                        setPagamento({ ...pagamento, formaPagamento: e.target.value })
+                      }
+                    >
+                      <option value="pix">Pix</option>
+                      <option value="cartão">Cartão</option>
+                      <option value="dinheiro">Dinheiro</option>
+                    </select>
+                  </Campo>
+                </div>
+                <button
+                  onClick={pagar}
+                  className="w-full rounded-full bg-rose-petal py-2.5 text-sm font-medium text-ink transition-colors hover:bg-petal/60"
+                >
+                  Registrar pagamento
+                </button>
+              </>
+            )}
+
+            {msgCliente && <Mensagem texto={msgCliente.texto} tipo={msgCliente.tipo} />}
+          </Panel>
+
+          <Panel titulo="Relatório mensal">
+            <div className="flex gap-2">
+              <input
+                className={inputClass}
+                type="month"
+                value={mes}
+                onChange={(e) => setMes(e.target.value)}
+              />
+              <button
+                onClick={() => setRelatorio(relatorioMensal(mes))}
+                className="shrink-0 rounded-full bg-orchid px-5 text-sm font-medium text-primary-foreground transition-colors hover:bg-mauve"
+              >
+                Gerar
+              </button>
+            </div>
+            {relatorio && (
+              <div className="mt-4">
+                {relatorio.mensagem ? (
+                  <Vazio>{relatorio.mensagem}</Vazio>
+                ) : (
+                  <>
+                    <p className="font-serif text-3xl text-orchid">
+                      {relatorio.totalAtendimentos}
+                    </p>
+                    <p className="mb-3 text-xs text-ink/55">
+                      atendimentos realizados em {relatorio.mes}
+                    </p>
+                    <ul className="space-y-1 text-sm">
+                      {Object.entries(relatorio.porProcedimento).map(([nome, qtd]) => (
+                        <li
+                          key={nome}
+                          className="flex justify-between rounded-xl bg-blush/70 px-4 py-2"
+                        >
+                          <span className="text-ink/70">{nome}</span>
+                          <span className="text-ink">{qtd}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+              </div>
+            )}
+          </Panel>
+        </div>
+      </main>
+    </div>
+  );
+}
