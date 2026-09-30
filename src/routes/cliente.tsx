@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { CalendarCheck, Clock3, PackageCheck, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import {
   agendarSessaoAvulsa,
@@ -22,15 +23,18 @@ import {
   type SessaoDetalhada,
 } from "@/lib/db";
 import {
-  AppTopbar,
+  AppShell,
   Badge,
   Campo,
   Mensagem,
+  PageHeading,
   Panel,
+  StatCard,
   Vazio,
   inputClass,
 } from "@/components/camelia";
 import { ListaDisponibilidade } from "@/components/disponibilidade";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/cliente")({
   head: () => ({
@@ -151,9 +155,9 @@ function AreaCliente() {
   function cancelar(id: string) {
     setMsg(null);
     try {
-      cancelarSessao(id, usuario!);
+      cancelarSessao(id, usuario);
       setMsg({ texto: "Sessão cancelada.", tipo: "sucesso" });
-      recarregar(usuario!);
+      recarregar(usuario);
     } catch (err) {
       setMsg({ texto: (err as Error).message, tipo: "erro" });
     }
@@ -163,31 +167,42 @@ function AreaCliente() {
     if (!remarcando) return;
     setMsgRemarcar(null);
     try {
-      remarcarSessao(remarcando.id, { novaData, novoHorario }, usuario!);
+      remarcarSessao(remarcando.id, { novaData, novoHorario }, usuario);
       setRemarcando(null);
       setMsg({ texto: "Sessão remarcada com sucesso.", tipo: "sucesso" });
-      recarregar(usuario!);
+      recarregar(usuario);
     } catch (err) {
       setMsgRemarcar((err as Error).message);
     }
   }
 
   return (
-    <div className="min-h-screen bg-blush font-body text-ink">
-      <AppTopbar
-        subtitulo="Minha área"
+    <AppShell
+        role="cliente"
+        subtitulo="Agendamentos, sessões e pacotes em um só lugar"
         nome={usuario.nome}
         onSair={() => {
           limparSessao();
           navigate({ to: "/" });
         }}
-      />
+      >
+        <PageHeading
+          eyebrow="Seu momento de cuidado"
+          title={`Olá, ${usuario.nome.split(" ")[0]}`}
+          description="Escolha o atendimento e veja somente os horários realmente livres."
+        />
 
-      <main className="mx-auto grid max-w-6xl gap-6 px-6 py-8 md:px-10 lg:grid-cols-2">
-        <Panel titulo="Agendar sessão">
-          <div className="mb-4 flex rounded-full bg-blush p-1">
+        <div className="mb-7 grid gap-3 sm:grid-cols-3">
+          <StatCard label="Próximas sessões" value={sessoes.filter((s) => s.status === "agendada").length} icon={<CalendarCheck className="h-4 w-4" />} />
+          <StatCard label="Pacotes ativos" value={comSaldo.length} icon={<PackageCheck className="h-4 w-4" />} />
+          <StatCard label="Escolha rápida" value="3 passos" detail="Procedimento, horário e confirmação" icon={<Clock3 className="h-4 w-4" />} />
+        </div>
+
+        <div className="grid items-start gap-6 xl:grid-cols-[1.15fr_.85fr]">
+        <Panel titulo="Novo agendamento" acao={<span className="text-xs text-ink/40">1 de 3 · escolha</span>}>
+          <div className="mb-5 grid grid-cols-2 gap-2 rounded-lg bg-blush p-1">
             {(["avulsa", "pacote"] as const).map((m) => (
-              <button
+              <Button
                 key={m}
                 onClick={() => {
                   setModo(m);
@@ -195,12 +210,13 @@ function AreaCliente() {
                   setEscolha(null);
                   setMsg(null);
                 }}
-                className={`flex-1 rounded-full py-2 text-sm transition-colors ${
-                  modo === m ? "bg-orchid text-primary-foreground" : "text-ink/60"
+                variant="ghost"
+                className={`h-9 rounded-md text-sm shadow-none ${
+                  modo === m ? "bg-card text-orchid shadow-sm hover:bg-card" : "text-ink/55"
                 }`}
               >
                 {m === "avulsa" ? "Sessão avulsa" : "Usar pacote"}
-              </button>
+              </Button>
             ))}
           </div>
 
@@ -242,17 +258,20 @@ function AreaCliente() {
             </Campo>
           )}
 
-          <button
+          <Button
             onClick={buscarHorarios}
-            className="mt-1 w-full rounded-full bg-rose-petal py-2.5 text-sm font-medium text-ink transition-colors hover:bg-petal/60"
+            variant="secondary"
+            className="mt-1 w-full"
           >
             Ver horários disponíveis
-          </button>
+          </Button>
 
           {disponibilidade && (
-            <div className="mt-5">
+            <div className="mt-6 border-t border-rose-petal/60 pt-5">
+              <p className="mb-4 text-xs font-medium uppercase tracking-[0.14em] text-orchid">2 de 3 · escolha o horário</p>
               <ListaDisponibilidade
                 resultado={disponibilidade}
+                selecionado={escolha}
                 onSelect={(profissionalId, data, horario) =>
                   setEscolha({ profissionalId, data, horario })
                 }
@@ -261,26 +280,27 @@ function AreaCliente() {
           )}
 
           {escolha && (
-            <div className="mt-5 rounded-2xl bg-lilac/15 px-4 py-4">
+            <div className="mt-5 rounded-lg border border-lilac/40 bg-lilac/10 px-4 py-4">
+              <p className="mb-2 text-xs font-medium uppercase tracking-[0.14em] text-orchid">3 de 3 · confirme</p>
               <p className="text-sm text-ink/70">
                 Horário selecionado:{" "}
                 <strong className="text-ink">
                   {formatarData(escolha.data)} às {escolha.horario}
                 </strong>
               </p>
-              <button
+              <Button
                 onClick={confirmar}
-                className="mt-3 w-full rounded-full bg-orchid py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-mauve"
+                className="mt-3 w-full bg-sage-deep text-primary-foreground hover:bg-sage-deep/90"
               >
                 Confirmar agendamento
-              </button>
+              </Button>
             </div>
           )}
 
           {msg && <Mensagem texto={msg.texto} tipo={msg.tipo} />}
         </Panel>
 
-        <div className="space-y-6">
+        <div id="pacotes" className="space-y-6">
           <Panel titulo="Minhas sessões">
             {sessoes.length === 0 ? (
               <Vazio>Você ainda não tem sessões agendadas.</Vazio>
@@ -289,7 +309,7 @@ function AreaCliente() {
                 {sessoes.map((s) => (
                   <li
                     key={s.id}
-                    className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-rose-petal/60 bg-blush/60 px-4 py-3"
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-rose-petal/60 bg-blush/40 px-4 py-3"
                   >
                     <div>
                       <p className="font-serif text-lg text-ink">
@@ -305,23 +325,27 @@ function AreaCliente() {
                     </div>
                     {s.status === "agendada" && (
                       <div className="flex gap-2">
-                        <button
+                        <Button
+                          variant="outline"
+                          size="sm"
                           onClick={() => {
                             setRemarcando(s);
                             setNovaData(s.data);
                             setNovoHorario(s.horario);
                             setMsgRemarcar(null);
                           }}
-                          className="rounded-full border border-mauve/50 px-3 py-1.5 text-xs text-ink transition-colors hover:bg-rose-petal/60"
+                          className="text-ink"
                         >
                           Remarcar
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => cancelar(s.id)}
-                          className="rounded-full border border-destructive/40 px-3 py-1.5 text-xs text-destructive transition-colors hover:bg-destructive/10"
+                          className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                         >
                           Cancelar
-                        </button>
+                        </Button>
                       </div>
                     )}
                   </li>
@@ -341,7 +365,7 @@ function AreaCliente() {
                 {pacotes.map((p) => (
                   <li
                     key={p.id}
-                    className="rounded-2xl border border-rose-petal/60 bg-blush/60 px-4 py-3"
+                    className="rounded-lg border border-rose-petal/60 bg-blush/40 px-4 py-3"
                   >
                     <p className="font-serif text-lg text-ink">{p.procedimentoNome}</p>
                     <div className="mt-1 grid grid-cols-2 gap-1 text-sm text-ink/60">
@@ -364,11 +388,11 @@ function AreaCliente() {
             )}
           </Panel>
         </div>
-      </main>
+        </div>
 
       {remarcando && (
         <div className="fixed inset-0 z-30 grid place-items-center bg-ink/40 px-4">
-          <div className="w-full max-w-md rounded-3xl bg-card p-6 shadow-2xl">
+          <div className="w-full max-w-md rounded-xl bg-card p-6 shadow-2xl">
             <h2 className="font-serif text-2xl text-ink">Remarcar sessão</h2>
             <p className="mt-1 mb-4 text-sm text-ink/55">
               {remarcando.procedimentoNome} · atualmente {formatarData(remarcando.data)} às{" "}
@@ -397,22 +421,23 @@ function AreaCliente() {
             </Campo>
             <Mensagem texto={msgRemarcar} />
             <div className="mt-5 flex gap-3">
-              <button
+              <Button
+                variant="outline"
                 onClick={() => setRemarcando(null)}
-                className="flex-1 rounded-full border border-mauve/50 py-2.5 text-sm text-ink transition-colors hover:bg-rose-petal/50"
+                className="flex-1"
               >
                 Voltar
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={salvarRemarcacao}
-                className="flex-1 rounded-full bg-orchid py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-mauve"
+                className="flex-1"
               >
                 Salvar
-              </button>
+              </Button>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </AppShell>
   );
 }
