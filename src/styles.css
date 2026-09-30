@@ -81,18 +81,18 @@
   --input: oklch(0.92 0.03 350);
   --ring: oklch(0.58 0.12 300);
 
-  /* Custom palette — exact values from the chosen direction */
-  --blush: #fdf6f9;
-  --rose-petal: #f5d7e3;
-  --petal: #e7a9c1;
-  --mauve: #c78bb0;
-  --lilac: #b9a8dc;
-  --orchid: #9d7bc8;
-  --ink: #3d2a44;
-  --sage: #9bc08f;
-  --sage-soft: #cfe0c6;
-  --sage-deep: #4f6b47;
-  --gold: #c79a45;
+  /* Elegant Botanical Dashboard */
+  --blush: oklch(0.985 0.009 350);
+  --rose-petal: oklch(0.925 0.035 350);
+  --petal: oklch(0.79 0.075 350);
+  --mauve: oklch(0.65 0.085 330);
+  --lilac: oklch(0.84 0.06 305);
+  --orchid: oklch(0.56 0.10 315);
+  --ink: oklch(0.30 0.025 330);
+  --sage: oklch(0.66 0.07 145);
+  --sage-soft: oklch(0.91 0.035 145);
+  --sage-deep: oklch(0.46 0.065 145);
+  --gold: oklch(0.71 0.09 80);
 
   --font-serif-display: 'DM Serif Display', serif;
   --font-body-sans: 'Fira Sans', sans-serif;
@@ -167,5 +167,25 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-body-sans);
+  }
+
+  button, a, input, select, textarea {
+    outline-offset: 3px;
+  }
+
+  ::selection {
+    background: var(--rose-petal);
+    color: var(--ink);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes camelia-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .page-enter {
+    animation: camelia-in 420ms ease-out both;
   }
 }
