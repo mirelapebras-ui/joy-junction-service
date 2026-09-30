@@ -4,10 +4,12 @@ import { Vazio } from "./camelia";
 export function ListaDisponibilidade({
   resultado,
   onSelect,
+  selecionado,
   dias = 3,
 }: {
   resultado: DisponibilidadeProfissional[] | null;
   onSelect: (profissionalId: string, data: string, horario: string) => void;
+  selecionado?: { profissionalId: string; data: string; horario: string } | null;
   dias?: number;
 }) {
   if (!resultado) return null;
@@ -18,8 +20,15 @@ export function ListaDisponibilidade({
     <div className="space-y-5">
       {resultado.map((prof) => (
         <div key={prof.profissionalId}>
-          <p className="font-serif text-lg text-ink">{prof.nomeProfissional}</p>
-          <p className="mb-2 text-xs text-ink/50">{prof.especialidade}</p>
+          <div className="mb-3 flex items-center gap-3">
+            <span className="grid h-9 w-9 place-items-center rounded-full bg-lilac/20 text-xs font-semibold text-orchid">
+              {prof.nomeProfissional.split(" ").map((nome) => nome[0]).slice(0, 2).join("")}
+            </span>
+            <span>
+              <span className="block font-medium text-ink">{prof.nomeProfissional}</span>
+              <span className="block text-xs text-ink/45">{prof.especialidade}</span>
+            </span>
+          </div>
           {prof.disponibilidade.length === 0 ? (
             <Vazio>Sem horários livres nos próximos dias.</Vazio>
           ) : (
@@ -35,7 +44,12 @@ export function ListaDisponibilidade({
                         key={h}
                         type="button"
                         onClick={() => onSelect(prof.profissionalId, d.data, h)}
-                        className="rounded-full border border-rose-petal bg-blush px-3 py-1.5 text-xs text-ink transition-colors hover:border-orchid hover:bg-orchid hover:text-primary-foreground"
+                        aria-pressed={selecionado?.profissionalId === prof.profissionalId && selecionado.data === d.data && selecionado.horario === h}
+                        className={`min-w-16 rounded-lg border px-3 py-2 text-xs font-medium transition-all ${
+                          selecionado?.profissionalId === prof.profissionalId && selecionado.data === d.data && selecionado.horario === h
+                            ? "border-orchid bg-orchid text-primary-foreground shadow-sm"
+                            : "border-rose-petal bg-blush text-ink hover:border-orchid hover:bg-lilac/20"
+                        }`}
                       >
                         {h}
                       </button>
