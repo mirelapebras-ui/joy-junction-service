@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { CalendarDays, CheckCircle2, Clock3 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import {
   formatarData,
@@ -11,14 +12,17 @@ import {
   type Sessao_Usuario,
 } from "@/lib/db";
 import {
-  AppTopbar,
+  AppShell,
   Badge,
   Campo,
   Mensagem,
+  PageHeading,
   Panel,
+  StatCard,
   Vazio,
   inputClass,
 } from "@/components/camelia";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/profissional")({
   head: () => ({
@@ -85,61 +89,70 @@ function AreaProfissional() {
   }
 
   return (
-    <div className="min-h-screen bg-blush font-body text-ink">
-      <AppTopbar
-        subtitulo={`Área do profissional${usuario.especialidade ? ` · ${usuario.especialidade}` : ""}`}
+    <AppShell
+        role="profissional"
+        subtitulo={usuario.especialidade ?? "Agenda de atendimentos"}
         nome={usuario.nome}
         onSair={() => {
           limparSessao();
           navigate({ to: "/" });
         }}
-      />
+      >
+        <PageHeading
+          eyebrow="Agenda profissional"
+          title="Atendimentos do dia"
+          description="Acompanhe a sequência dos atendimentos e registre cada sessão concluída."
+        />
 
-      <main className="mx-auto max-w-3xl px-6 py-8 md:px-10">
-        <Panel titulo="Minha agenda">
+        <div className="mb-7 grid gap-3 sm:grid-cols-3">
+          <StatCard label="Total na agenda" value={agenda.length} icon={<CalendarDays className="h-4 w-4" />} />
+          <StatCard label="Aguardando" value={agenda.filter((s) => s.status === "agendada").length} icon={<Clock3 className="h-4 w-4" />} />
+          <StatCard label="Concluídos" value={agenda.filter((s) => s.status === "realizada").length} icon={<CheckCircle2 className="h-4 w-4" />} />
+        </div>
+
+        <Panel titulo="Minha agenda" acao={<span className="text-xs text-ink/40">{usuario.especialidade}</span>}>
           {agenda.length === 0 ? (
             <Vazio>Você não tem sessões na agenda.</Vazio>
           ) : (
-            <ul className="space-y-3">
+            <ul className="relative space-y-0 before:absolute before:top-6 before:bottom-6 before:left-[4.55rem] before:w-px before:bg-rose-petal">
               {agenda.map((s) => (
                 <li
                   key={s.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-rose-petal/60 bg-blush/60 px-4 py-3"
+                  className="relative grid gap-4 border-b border-rose-petal/55 py-5 last:border-0 md:grid-cols-[4rem_1fr_auto] md:items-center"
                 >
+                  <div className="relative z-10 w-fit bg-card pr-3 text-sm font-semibold text-sage-deep">{s.horario}</div>
                   <div>
-                    <p className="font-serif text-lg text-ink">
-                      {formatarData(s.data)} às {s.horario}
-                    </p>
+                    <p className="font-medium text-ink">{s.nomeCliente}</p>
                     <p className="text-sm text-ink/55">
-                      {s.nomeCliente} · {s.procedimentoNome}
+                      {s.procedimentoNome} · {formatarData(s.data)}
                     </p>
                     <span className="mt-1 inline-block">
                       <Badge status={s.status} />
                     </span>
                   </div>
                   {s.status === "agendada" && (
-                    <button
+                    <Button
                       onClick={() => {
                         setSelecionada(s);
                         setObservacoes("");
                         setProdutos("");
                         setErro(null);
                       }}
-                      className="rounded-full bg-orchid px-4 py-2 text-xs font-medium text-primary-foreground transition-colors hover:bg-mauve"
+                      size="sm"
+                      className="bg-sage-deep text-primary-foreground hover:bg-sage-deep/90"
                     >
                       Registrar atendimento
-                    </button>
+                    </Button>
                   )}
                 </li>
               ))}
             </ul>
           )}
         </Panel>
-      </main>
 
       {selecionada && (
         <div className="fixed inset-0 z-30 grid place-items-center bg-ink/40 px-4">
-          <div className="w-full max-w-md rounded-3xl bg-card p-6 shadow-2xl">
+          <div className="w-full max-w-md rounded-xl bg-card p-6 shadow-2xl">
             <h2 className="font-serif text-2xl text-ink">Registrar atendimento</h2>
             <p className="mt-1 mb-4 text-sm text-ink/55">
               {selecionada.nomeCliente} · {formatarData(selecionada.data)} às{" "}
@@ -163,22 +176,23 @@ function AreaProfissional() {
             </Campo>
             <Mensagem texto={erro} />
             <div className="mt-5 flex gap-3">
-              <button
+              <Button
+                variant="outline"
                 onClick={() => setSelecionada(null)}
-                className="flex-1 rounded-full border border-mauve/50 py-2.5 text-sm text-ink transition-colors hover:bg-rose-petal/50"
+                className="flex-1"
               >
                 Cancelar
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={salvarAtendimento}
-                className="flex-1 rounded-full bg-orchid py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-mauve"
+                className="flex-1 bg-sage-deep text-primary-foreground hover:bg-sage-deep/90"
               >
                 Salvar
-              </button>
+              </Button>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </AppShell>
   );
 }

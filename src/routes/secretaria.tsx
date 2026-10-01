@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { CalendarDays, CircleDollarSign, Clock3, PackageCheck } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import {
   buscarClientePorCpf,
@@ -20,14 +21,17 @@ import {
   type SessaoDetalhada,
 } from "@/lib/db";
 import {
-  AppTopbar,
+  AppShell,
   Badge,
   Campo,
   Mensagem,
+  PageHeading,
   Panel,
+  StatCard,
   Vazio,
   inputClass,
 } from "@/components/camelia";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/secretaria")({
   head: () => ({
@@ -165,61 +169,76 @@ function AreaSecretaria() {
   }
 
   return (
-    <div className="min-h-screen bg-blush font-body text-ink">
-      <AppTopbar
-        subtitulo="Recepção"
+    <AppShell
+        role="secretaria"
+        subtitulo="Agenda, clientes e recebimentos"
         nome={usuario.nome}
         onSair={() => {
           limparSessao();
           navigate({ to: "/" });
         }}
-      />
+      >
+        <PageHeading
+          eyebrow="Visão da recepção"
+          title="Organização do dia"
+          description="Acompanhe a agenda e acesse rapidamente as rotinas de clientes e pagamentos."
+        />
 
-      <main className="mx-auto grid max-w-6xl gap-6 px-6 py-8 md:px-10 lg:grid-cols-2">
-        <Panel titulo="Agenda geral">
+        <div className="mb-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <StatCard label="Na agenda" value={agenda.length} icon={<CalendarDays className="h-4 w-4" />} />
+          <StatCard label="Aguardando" value={agenda.filter((s) => s.status === "agendada").length} icon={<Clock3 className="h-4 w-4" />} />
+          <StatCard label="Realizados" value={agenda.filter((s) => s.status === "realizada").length} icon={<PackageCheck className="h-4 w-4" />} />
+          <StatCard label="Área financeira" value="Pacotes" detail="Venda e recebimentos" icon={<CircleDollarSign className="h-4 w-4" />} />
+        </div>
+
+        <section id="agenda" className="mb-6">
+        <Panel titulo="Agenda geral" acao={<span className="text-xs text-ink/40">Todos os profissionais</span>}>
           {agenda.length === 0 ? (
             <Vazio>Nenhuma sessão ativa na agenda.</Vazio>
           ) : (
-            <ul className="max-h-[26rem] space-y-3 overflow-y-auto pr-1">
+             <ul className="max-h-[30rem] divide-y divide-rose-petal/55 overflow-y-auto pr-1">
               {agenda.map((s) => (
                 <li
                   key={s.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-rose-petal/60 bg-blush/60 px-4 py-3"
+                   className="grid gap-3 py-4 md:grid-cols-[7rem_1fr_auto] md:items-center"
                 >
+                   <p className="font-serif text-lg text-sage-deep">{s.horario}</p>
                   <div>
-                    <p className="font-serif text-lg text-ink">
-                      {formatarData(s.data)} às {s.horario}
-                    </p>
+                     <p className="font-medium text-ink">{s.nomeCliente}</p>
                     <p className="text-sm text-ink/55">
-                      {s.nomeCliente} · {s.procedimentoNome} · {s.nomeProfissional}
+                       {s.procedimentoNome} · {s.nomeProfissional} · {formatarData(s.data)}
                     </p>
                     <span className="mt-1 inline-block">
                       <Badge status={s.status} />
                     </span>
                   </div>
                   {s.status === "agendada" && (
-                    <button
+                     <Button
+                       variant="ghost"
+                       size="sm"
                       onClick={() => {
                         try {
-                          cancelarSessao(s.id, usuario!);
-                          recarregarAgenda(usuario!);
+                           cancelarSessao(s.id, usuario);
+                           recarregarAgenda(usuario);
                         } catch (err) {
                           setMsgCliente({ texto: (err as Error).message, tipo: "erro" });
                         }
                       }}
-                      className="rounded-full border border-destructive/40 px-3 py-1.5 text-xs text-destructive transition-colors hover:bg-destructive/10"
+                       className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                     >
                       Cancelar
-                    </button>
+                     </Button>
                   )}
                 </li>
               ))}
             </ul>
           )}
         </Panel>
+        </section>
 
-        <div className="space-y-6">
-          <Panel titulo="Cliente">
+        <div className="grid items-start gap-6 xl:grid-cols-2">
+          <section id="pacotes">
+          <Panel titulo="Clientes e pacotes">
             <div className="flex gap-2">
               <input
                 className={inputClass}
@@ -227,17 +246,17 @@ function AreaSecretaria() {
                 value={cpf}
                 onChange={(e) => setCpf(e.target.value)}
               />
-              <button
+              <Button
                 onClick={buscar}
-                className="shrink-0 rounded-full bg-orchid px-5 text-sm font-medium text-primary-foreground transition-colors hover:bg-mauve"
+                className="shrink-0"
               >
                 Buscar
-              </button>
+              </Button>
             </div>
 
             {cliente && (
               <>
-                <p className="mt-4 rounded-2xl bg-lilac/15 px-4 py-3 text-sm text-ink">
+                 <p className="mt-4 rounded-lg border border-lilac/30 bg-lilac/10 px-4 py-3 text-sm text-ink">
                   Cliente selecionada: <strong>{cliente.nome}</strong>
                 </p>
 
@@ -302,12 +321,12 @@ function AreaSecretaria() {
                     </select>
                   </Campo>
                 </div>
-                <button
+                 <Button
                   onClick={vender}
-                  className="w-full rounded-full bg-orchid py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-mauve"
+                   className="w-full bg-sage-deep text-primary-foreground hover:bg-sage-deep/90"
                 >
                   Cadastrar pacote
-                </button>
+                 </Button>
 
                 <h3 className="mt-8 mb-3 font-serif text-xl text-ink">
                   Pacotes desta cliente
@@ -319,7 +338,7 @@ function AreaSecretaria() {
                     {pacotesCliente.map((p) => (
                       <li
                         key={p.id}
-                        className="rounded-2xl border border-rose-petal/60 bg-blush/60 px-4 py-3"
+                         className="rounded-lg border border-rose-petal/60 bg-blush/40 px-4 py-3"
                       >
                         <p className="text-ink">{p.procedimentoNome}</p>
                         <p className="text-ink/55">
@@ -332,7 +351,7 @@ function AreaSecretaria() {
                   </ul>
                 )}
 
-                <h3 className="mt-8 mb-3 font-serif text-xl text-ink">
+                 <h3 id="financeiro" className="mt-8 mb-3 font-serif text-xl text-ink">
                   Registrar pagamento
                 </h3>
                 <Campo label="Pacote">
@@ -377,18 +396,21 @@ function AreaSecretaria() {
                     </select>
                   </Campo>
                 </div>
-                <button
+                 <Button
+                   variant="secondary"
                   onClick={pagar}
-                  className="w-full rounded-full bg-rose-petal py-2.5 text-sm font-medium text-ink transition-colors hover:bg-petal/60"
+                   className="w-full"
                 >
                   Registrar pagamento
-                </button>
+                 </Button>
               </>
             )}
 
             {msgCliente && <Mensagem texto={msgCliente.texto} tipo={msgCliente.tipo} />}
           </Panel>
+          </section>
 
+          <section>
           <Panel titulo="Relatório mensal">
             <div className="flex gap-2">
               <input
@@ -397,12 +419,12 @@ function AreaSecretaria() {
                 value={mes}
                 onChange={(e) => setMes(e.target.value)}
               />
-              <button
+              <Button
                 onClick={() => setRelatorio(relatorioMensal(mes))}
-                className="shrink-0 rounded-full bg-orchid px-5 text-sm font-medium text-primary-foreground transition-colors hover:bg-mauve"
+                className="shrink-0"
               >
                 Gerar
-              </button>
+              </Button>
             </div>
             {relatorio && (
               <div className="mt-4">
@@ -420,7 +442,7 @@ function AreaSecretaria() {
                       {Object.entries(relatorio.porProcedimento).map(([nome, qtd]) => (
                         <li
                           key={nome}
-                          className="flex justify-between rounded-xl bg-blush/70 px-4 py-2"
+                          className="flex justify-between rounded-lg bg-blush/70 px-4 py-2"
                         >
                           <span className="text-ink/70">{nome}</span>
                           <span className="text-ink">{qtd}</span>
@@ -432,8 +454,8 @@ function AreaSecretaria() {
               </div>
             )}
           </Panel>
+          </section>
         </div>
-      </main>
-    </div>
+    </AppShell>
   );
 }

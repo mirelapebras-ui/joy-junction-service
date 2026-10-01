@@ -1,5 +1,6 @@
 import { formatarData, type DisponibilidadeProfissional } from "@/lib/db";
 import { Vazio } from "./camelia";
+import { Button } from "@/components/ui/button";
 
 export function ListaDisponibilidade({
   resultado,
@@ -40,19 +41,21 @@ export function ListaDisponibilidade({
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {d.horarios.map((h) => (
-                      <button
+                      <Button
                         key={h}
                         type="button"
                         onClick={() => onSelect(prof.profissionalId, d.data, h)}
                         aria-pressed={selecionado?.profissionalId === prof.profissionalId && selecionado.data === d.data && selecionado.horario === h}
-                        className={`min-w-16 rounded-lg border px-3 py-2 text-xs font-medium transition-all ${
+                        variant="outline"
+                        size="sm"
+                        className={`min-w-16 rounded-lg px-3 text-xs ${
                           selecionado?.profissionalId === prof.profissionalId && selecionado.data === d.data && selecionado.horario === h
                             ? "border-orchid bg-orchid text-primary-foreground shadow-sm"
                             : "border-rose-petal bg-blush text-ink hover:border-orchid hover:bg-lilac/20"
                         }`}
                       >
                         {h}
-                      </button>
+                      </Button>
                     ))}
                   </div>
                 </div>
