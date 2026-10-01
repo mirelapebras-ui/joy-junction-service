@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { CalendarCheck, Clock3, PackageCheck, Sparkles } from "lucide-react";
+import { CalendarCheck, Clock3, PackageCheck } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import {
   agendarSessaoAvulsa,
@@ -153,6 +153,7 @@ function AreaCliente() {
   }
 
   function cancelar(id: string) {
+    if (!usuario) return;
     setMsg(null);
     try {
       cancelarSessao(id, usuario);
@@ -164,7 +165,7 @@ function AreaCliente() {
   }
 
   function salvarRemarcacao() {
-    if (!remarcando) return;
+    if (!remarcando || !usuario) return;
     setMsgRemarcar(null);
     try {
       remarcarSessao(remarcando.id, { novaData, novoHorario }, usuario);
