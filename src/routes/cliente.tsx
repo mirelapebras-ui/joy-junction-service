@@ -5,6 +5,9 @@ import {
   agendarSessaoAvulsa,
   agendarSessaoDePacote,
   cancelarSessao,
+  HORARIOS_DIA,
+  horasAte,
+  podeAlterarSessao,
   consultarDisponibilidade,
   formatarData,
   formatarMoeda,
@@ -154,15 +157,18 @@ function AreaCliente() {
 
   function cancelar(id: string) {
     if (!usuario) return;
-    setMsg(null);
+    if (!window.confirm("Deseja mesmo cancelar esta sessão?")) return;
+    setMsgSessoes(null);
     try {
       cancelarSessao(id, usuario);
-      setMsg({ texto: "Sessão cancelada.", tipo: "sucesso" });
+      setMsgSessoes({ texto: "Sessão cancelada.", tipo: "sucesso" });
       recarregar(usuario);
     } catch (err) {
-      setMsg({ texto: (err as Error).message, tipo: "erro" });
+      setMsgSessoes({ texto: (err as Error).message, tipo: "erro" });
     }
   }
+
+  const [msgSessoes, setMsgSessoes] = useState<{ texto: string; tipo: "erro" | "sucesso" } | null>(null);
 
   function salvarRemarcacao() {
     if (!remarcando || !usuario) return;
@@ -170,7 +176,7 @@ function AreaCliente() {
     try {
       remarcarSessao(remarcando.id, { novaData, novoHorario }, usuario);
       setRemarcando(null);
-      setMsg({ texto: "Sessão remarcada com sucesso.", tipo: "sucesso" });
+      setMsgSessoes({ texto: "Sessão remarcada com sucesso.", tipo: "sucesso" });
       recarregar(usuario);
     } catch (err) {
       setMsgRemarcar((err as Error).message);
@@ -324,7 +330,14 @@ function AreaCliente() {
                         <Badge status={s.status} />
                       </span>
                     </div>
-                    {s.status === "agendada" && (
+                    {s.status === "agendada" && !podeAlterarSessao(s) && (
+                      <span className="text-xs text-ink/45">
+                        {horasAte(s.data, s.horario) < 0
+                          ? "Horário encerrado · fale com a recepção"
+                          : "Menos de 2h · fale com a recepção"}
+                      </span>
+                    )}
+                    {podeAlterarSessao(s) && (
                       <div className="flex gap-2">
                         <Button
                           variant="outline"
@@ -353,6 +366,7 @@ function AreaCliente() {
                 ))}
               </ul>
             )}
+            {msgSessoes && <Mensagem texto={msgSessoes.texto} tipo={msgSessoes.tipo} />}
             <p className="mt-3 text-xs text-ink/45">
               Cancelamentos e remarcações são permitidos com no mínimo 2 horas de antecedência.
             </p>
@@ -403,6 +417,7 @@ function AreaCliente() {
               <input
                 className={inputClass}
                 type="date"
+                min={new Date().toISOString().slice(0, 10)}
                 value={novaData}
                 onChange={(e) => setNovaData(e.target.value)}
               />
@@ -413,7 +428,7 @@ function AreaCliente() {
                 value={novoHorario}
                 onChange={(e) => setNovoHorario(e.target.value)}
               >
-                {["09:00", "10:00", "11:00", "14:00", "15:00", "16:00", "17:00"].map((h) => (
+                {HORARIOS_DIA.map((h) => (
                   <option key={h} value={h}>
                     {h}
                   </option>
