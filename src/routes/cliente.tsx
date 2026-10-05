@@ -78,6 +78,7 @@ function AreaCliente() {
   >(null);
   const [escolha, setEscolha] = useState<Escolha | null>(null);
   const [msg, setMsg] = useState<{ texto: string; tipo: "erro" | "sucesso" } | null>(null);
+  const [msgSessoes, setMsgSessoes] = useState<{ texto: string; tipo: "erro" | "sucesso" } | null>(null);
 
   const [remarcando, setRemarcando] = useState<SessaoDetalhada | null>(null);
   const [novaData, setNovaData] = useState("");
@@ -167,8 +168,6 @@ function AreaCliente() {
       setMsgSessoes({ texto: (err as Error).message, tipo: "erro" });
     }
   }
-
-  const [msgSessoes, setMsgSessoes] = useState<{ texto: string; tipo: "erro" | "sucesso" } | null>(null);
 
   function salvarRemarcacao() {
     if (!remarcando || !usuario) return;
