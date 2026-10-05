@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { CalendarDays, CreditCard, Home, LogOut, Package, Sparkles, UserRound } from "lucide-react";
 import { type ReactNode } from "react";
@@ -183,6 +184,17 @@ export function AppShell({
           { id: "agenda" as const, label: "Minha agenda", icon: CalendarDays },
         ];
 
+  const [atual, setAtual] = useState<AppSection>(active);
+  useEffect(() => {
+    const ler = () => {
+      const h = window.location.hash.replace("#", "");
+      if (h === "agenda" || h === "pacotes" || h === "financeiro") setAtual(h);
+    };
+    ler();
+    window.addEventListener("hashchange", ler);
+    return () => window.removeEventListener("hashchange", ler);
+  }, []);
+
   return (
     <div className="min-h-screen bg-blush font-body text-ink lg:p-5">
       <div className="mx-auto min-h-screen max-w-[1480px] overflow-hidden border-rose-petal/70 bg-card shadow-xl shadow-rose-petal/25 lg:min-h-[calc(100vh-2.5rem)] lg:rounded-2xl lg:border">
@@ -202,7 +214,7 @@ export function AppShell({
                   key={id}
                   href={`#${id}`}
                   className={`flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
-                    active === id
+                    atual === id
                       ? "border border-rose-petal bg-card font-medium text-sage-deep shadow-sm"
                       : "text-ink/55 hover:bg-card/70 hover:text-ink"
                   }`}

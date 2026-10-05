@@ -226,7 +226,7 @@ export function popularDadosDeExemplo() {
 
 }
 
-const HORARIOS_DIA = [
+export const HORARIOS_DIA = [
   "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
   "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00",
 ];
@@ -241,9 +241,12 @@ function proximosDiasUteis(qtd: number) {
   }
   return dias;
 }
-function horasAte(data: string, horario: string) {
+export function horasAte(data: string, horario: string) {
   const alvo = new Date(`${data}T${horario}:00`);
   return (alvo.getTime() - Date.now()) / (1000 * 60 * 60);
+}
+export function podeAlterarSessao(s: { data: string; horario: string; status: string }) {
+  return s.status === "agendada" && horasAte(s.data, s.horario) >= 2;
 }
 
 // RF01 — Cadastrar Cliente · Regra: CPF não pode se repetir
@@ -470,8 +473,11 @@ export function cancelarSessao(sessaoId: string, usuario: Sessao_Usuario) {
   if (usuario.role === "cliente" && alvo.clienteId !== usuario.id)
     throw new Error("Você só pode cancelar suas próprias sessões.");
   if (alvo.status !== "agendada") throw new Error("Esta sessão não está mais ativa.");
-  if (horasAte(alvo.data, alvo.horario) < 2)
-    throw new Error("Cancelamentos só são permitidos com no mínimo 2 horas de antecedência.");
+  // A recepção pode cancelar a qualquer momento (ex.: falta da cliente ou horário já passado)
+  if (usuario.role !== "secretaria" && horasAte(alvo.data, alvo.horario) < 2)
+    throw new Error(horasAte(alvo.data, alvo.horario) < 0
+      ? "Este horário já passou. Para cancelar, fale com a recepção."
+      : "Cancelamentos só são permitidos com no mínimo 2 horas de antecedência.");
 
   alvo.status = "cancelada";
   salvarColecao(
@@ -504,7 +510,10 @@ export function remarcarSessao(
   if (usuario.role === "cliente" && alvo.clienteId !== usuario.id)
     throw new Error("Você só pode remarcar suas próprias sessões.");
   if (alvo.status !== "agendada") throw new Error("Esta sessão não está mais ativa.");
-  if (horasAte(alvo.data, alvo.horario) < 2)
+  if (!novaData || !novoHorario) throw new Error("Escolha a nova data e o novo horário.");
+  if (horasAte(novaData, novoHorario) < 2)
+    throw new Error("Escolha um novo horário com pelo menos 2 horas de antecedência.");
+  if (usuario.role !== "secretaria" && horasAte(alvo.data, alvo.horario) < 2)
     throw new Error(
       "Remarcações só são permitidas com no mínimo 2 horas de antecedência da sessão original.",
     );
@@ -679,6 +688,42 @@ export function meusPacotes(clienteId: string): PacoteDetalhado[] {
 }
 export function pacotesComSaldo(clienteId: string) {
   return meusPacotes(clienteId).filter((p) => p.saldoSessoes > 0);
+}
+
+// Visão financeira da recepção
+export interface PacoteFinanceiro extends PacoteDetalhado {
+  nomeCliente: string;
+}
+export interface PagamentoDetalhado extends Pagamento {
+  nomeCliente: string;
+  procedimentoNome: string;
+}
+export function resumoFinanceiro(mes: string) {
+  const clientes = Object.fromEntries(lerColecao<Cliente>(CHAVES.clientes).map((c) => [c.id, c.nome]));
+  const pacotesBase = lerColecao<Pacote>(CHAVES.pacotes);
+  const pacotes: PacoteFinanceiro[] = pacotesBase.map((p) => ({
+    ...p,
+    saldoDevedor: p.valorTotal - p.valorPago,
+    nomeCliente: clientes[p.clienteId] || "—",
+  }));
+  const mapaPacotes = Object.fromEntries(pacotes.map((p) => [p.id, p]));
+  const pagamentos: PagamentoDetalhado[] = lerColecao<Pagamento>(CHAVES.pagamentos)
+    .map((pg) => ({
+      ...pg,
+      nomeCliente: mapaPacotes[pg.pacoteId]?.nomeCliente || "—",
+      procedimentoNome: mapaPacotes[pg.pacoteId]?.procedimentoNome || "—",
+    }))
+    .sort((a, b) => b.data.localeCompare(a.data));
+  const doMes = pagamentos.filter((pg) => pg.data.startsWith(mes));
+  return {
+    pacotes,
+    emAberto: pacotes.filter((p) => p.saldoDevedor > 0),
+    pagamentos,
+    recebidoNoMes: doMes.reduce((t, pg) => t + pg.valor, 0),
+    qtdPagamentosMes: doMes.length,
+    aReceber: pacotes.reduce((t, p) => t + p.saldoDevedor, 0),
+    totalVendido: pacotes.reduce((t, p) => t + p.valorTotal, 0),
+  };
 }
 
 // RF12 — Gerar Relatório Gerencial

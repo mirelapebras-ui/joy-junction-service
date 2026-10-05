@@ -13,6 +13,7 @@ import {
   popularDadosDeExemplo,
   registrarPagamento,
   relatorioMensal,
+  resumoFinanceiro,
   venderPacote,
   visualizarAgenda,
   type PacoteDetalhado,
@@ -82,6 +83,10 @@ function AreaSecretaria() {
     formaPagamento: "pix",
   });
 
+  const [msgAgenda, setMsgAgenda] = useState<{ texto: string; tipo: "erro" | "sucesso" } | null>(null);
+  const [msgFin, setMsgFin] = useState<{ texto: string; tipo: "erro" | "sucesso" } | null>(null);
+  const [mesFin, setMesFin] = useState(new Date().toISOString().slice(0, 7));
+  const [versaoFin, setVersaoFin] = useState(0);
   const [mes, setMes] = useState(new Date().toISOString().slice(0, 7));
   const [relatorio, setRelatorio] = useState<ReturnType<typeof relatorioMensal> | null>(null);
 
@@ -102,6 +107,8 @@ function AreaSecretaria() {
   }, [navigate, recarregarAgenda]);
 
   if (!usuario) return null;
+  void versaoFin;
+  const fin = resumoFinanceiro(mesFin);
 
   function buscar() {
     setMsgCliente(null);
@@ -145,14 +152,14 @@ function AreaSecretaria() {
         formaPagamento: "pix",
       });
       setPacotesCliente(meusPacotes(cliente.id));
+      setVersaoFin((v) => v + 1);
     } catch (err) {
       setMsgCliente({ texto: (err as Error).message, tipo: "erro" });
     }
   }
 
   function pagar() {
-    if (!cliente) return;
-    setMsgCliente(null);
+    setMsgFin(null);
     try {
       registrarPagamento({
         pacoteId: pagamento.pacoteId,
@@ -160,11 +167,12 @@ function AreaSecretaria() {
         formaPagamento: pagamento.formaPagamento,
         data: new Date().toISOString().slice(0, 10),
       });
-      setMsgCliente({ texto: "Pagamento registrado.", tipo: "sucesso" });
+      setMsgFin({ texto: "Pagamento registrado.", tipo: "sucesso" });
       setPagamento({ pacoteId: "", valor: "", formaPagamento: "pix" });
-      setPacotesCliente(meusPacotes(cliente.id));
+      setVersaoFin((v) => v + 1);
+      if (cliente) setPacotesCliente(meusPacotes(cliente.id));
     } catch (err) {
-      setMsgCliente({ texto: (err as Error).message, tipo: "erro" });
+      setMsgFin({ texto: (err as Error).message, tipo: "erro" });
     }
   }
 
@@ -188,7 +196,7 @@ function AreaSecretaria() {
           <StatCard label="Na agenda" value={agenda.length} icon={<CalendarDays className="h-4 w-4" />} />
           <StatCard label="Aguardando" value={agenda.filter((s) => s.status === "agendada").length} icon={<Clock3 className="h-4 w-4" />} />
           <StatCard label="Realizados" value={agenda.filter((s) => s.status === "realizada").length} icon={<PackageCheck className="h-4 w-4" />} />
-          <StatCard label="Área financeira" value="Pacotes" detail="Venda e recebimentos" icon={<CircleDollarSign className="h-4 w-4" />} />
+          <StatCard label="A receber" value={formatarMoeda(fin.aReceber)} detail={`${fin.emAberto.length} pacote(s) em aberto`} icon={<CircleDollarSign className="h-4 w-4" />} />
         </div>
 
         <section id="agenda" className="mb-6">
@@ -217,11 +225,15 @@ function AreaSecretaria() {
                        variant="ghost"
                        size="sm"
                       onClick={() => {
+                        if (!window.confirm(`Cancelar a sessão de ${s.nomeCliente} em ${formatarData(s.data)} às ${s.horario}?`)) return;
+                        setMsgAgenda(null);
                         try {
                            cancelarSessao(s.id, usuario);
                            recarregarAgenda(usuario);
+                           setVersaoFin((v) => v + 1);
+                           setMsgAgenda({ texto: "Sessão cancelada. Se era de pacote, o saldo foi devolvido.", tipo: "sucesso" });
                         } catch (err) {
-                          setMsgCliente({ texto: (err as Error).message, tipo: "erro" });
+                          setMsgAgenda({ texto: (err as Error).message, tipo: "erro" });
                         }
                       }}
                        className="text-destructive hover:bg-destructive/10 hover:text-destructive"
@@ -233,11 +245,107 @@ function AreaSecretaria() {
               ))}
             </ul>
           )}
+          {msgAgenda && <Mensagem texto={msgAgenda.texto} tipo={msgAgenda.tipo} />}
         </Panel>
         </section>
 
+
+        <section id="financeiro" className="mb-6 scroll-mt-6">
+          <Panel titulo="Financeiro" acao={
+            <input className={`${inputClass} w-auto`} type="month" value={mesFin} onChange={(e) => setMesFin(e.target.value)} aria-label="Mês" />
+          }>
+            <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <StatCard label="Recebido no mês" value={formatarMoeda(fin.recebidoNoMes)} detail={`${fin.qtdPagamentosMes} pagamento(s)`} icon={<CircleDollarSign className="h-4 w-4" />} />
+              <StatCard label="A receber" value={formatarMoeda(fin.aReceber)} detail="Saldo de todos os pacotes" icon={<Clock3 className="h-4 w-4" />} />
+              <StatCard label="Total vendido" value={formatarMoeda(fin.totalVendido)} detail={`${fin.pacotes.length} pacote(s)`} icon={<PackageCheck className="h-4 w-4" />} />
+              <StatCard label="Em aberto" value={fin.emAberto.length} detail="Pacotes com saldo devedor" icon={<CalendarDays className="h-4 w-4" />} />
+            </div>
+
+            <div className="grid items-start gap-6 xl:grid-cols-[1.2fr_1fr]">
+              <div>
+                <h3 className="mb-3 font-serif text-xl text-ink">Pacotes com valor em aberto</h3>
+                {fin.emAberto.length === 0 ? (
+                  <Vazio>Todos os pacotes estão quitados.</Vazio>
+                ) : (
+                  <ul className="space-y-2 text-sm">
+                    {fin.emAberto.map((p) => {
+                      const pct = p.valorTotal ? Math.round((p.valorPago / p.valorTotal) * 100) : 0;
+                      return (
+                        <li key={p.id} className="rounded-lg border border-rose-petal/60 bg-blush/40 px-4 py-3">
+                          <div className="flex flex-wrap items-start justify-between gap-2">
+                            <div>
+                              <p className="font-medium text-ink">{p.nomeCliente}</p>
+                              <p className="text-ink/55">{p.procedimentoNome} · {p.saldoSessoes} de {p.quantidadeSessoes} sessões</p>
+                            </div>
+                            <Button size="sm" variant="outline" onClick={() => { setPagamento({ ...pagamento, pacoteId: p.id, valor: String(p.saldoDevedor) }); setMsgFin(null); }}>
+                              Receber
+                            </Button>
+                          </div>
+                          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-rose-petal/50">
+                            <div className="h-full rounded-full bg-sage" style={{ width: `${pct}%` }} />
+                          </div>
+                          <p className="mt-1.5 flex justify-between text-xs text-ink/55">
+                            <span>{formatarMoeda(p.valorPago)} pagos de {formatarMoeda(p.valorTotal)}</span>
+                            <span className="text-destructive">falta {formatarMoeda(p.saldoDevedor)}</span>
+                          </p>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+
+              <div>
+                <h3 className="mb-3 font-serif text-xl text-ink">Registrar pagamento</h3>
+                <Campo label="Pacote">
+                  <select className={inputClass} value={pagamento.pacoteId} onChange={(e) => setPagamento({ ...pagamento, pacoteId: e.target.value })}>
+                    <option value="">Selecione</option>
+                    {fin.emAberto.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.nomeCliente} · {p.procedimentoNome} — falta {formatarMoeda(p.saldoDevedor)}
+                      </option>
+                    ))}
+                  </select>
+                </Campo>
+                <div className="grid grid-cols-2 gap-3">
+                  <Campo label="Valor (R$)">
+                    <input className={inputClass} type="number" min="0" step="0.01" value={pagamento.valor} onChange={(e) => setPagamento({ ...pagamento, valor: e.target.value })} />
+                  </Campo>
+                  <Campo label="Forma">
+                    <select className={inputClass} value={pagamento.formaPagamento} onChange={(e) => setPagamento({ ...pagamento, formaPagamento: e.target.value })}>
+                      <option value="pix">Pix</option>
+                      <option value="cartão">Cartão</option>
+                      <option value="dinheiro">Dinheiro</option>
+                    </select>
+                  </Campo>
+                </div>
+                <Button onClick={pagar} className="w-full bg-sage-deep text-primary-foreground hover:bg-sage-deep/90">
+                  Registrar pagamento
+                </Button>
+                {msgFin && <Mensagem texto={msgFin.texto} tipo={msgFin.tipo} />}
+
+                <h3 className="mt-8 mb-3 font-serif text-xl text-ink">Últimos pagamentos</h3>
+                {fin.pagamentos.length === 0 ? (
+                  <Vazio>Nenhum pagamento registrado.</Vazio>
+                ) : (
+                  <ul className="max-h-72 divide-y divide-rose-petal/55 overflow-y-auto text-sm">
+                    {fin.pagamentos.slice(0, 20).map((pg) => (
+                      <li key={pg.id} className="flex items-center justify-between gap-3 py-2.5">
+                        <div>
+                          <p className="text-ink">{pg.nomeCliente}</p>
+                          <p className="text-xs text-ink/50">{pg.procedimentoNome} · {formatarData(pg.data)} · {pg.formaPagamento}</p>
+                        </div>
+                        <span className="font-medium text-sage-deep">{formatarMoeda(pg.valor)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          </Panel>
+        </section>
         <div className="grid items-start gap-6 xl:grid-cols-2">
-          <section id="pacotes">
+          <section id="pacotes" className="scroll-mt-6">
           <Panel titulo="Clientes e pacotes">
             <div className="flex gap-2">
               <input
@@ -351,58 +459,6 @@ function AreaSecretaria() {
                   </ul>
                 )}
 
-                 <h3 id="financeiro" className="mt-8 mb-3 font-serif text-xl text-ink">
-                  Registrar pagamento
-                </h3>
-                <Campo label="Pacote">
-                  <select
-                    className={inputClass}
-                    value={pagamento.pacoteId}
-                    onChange={(e) =>
-                      setPagamento({ ...pagamento, pacoteId: e.target.value })
-                    }
-                  >
-                    <option value="">Selecione</option>
-                    {pacotesCliente
-                      .filter((p) => p.saldoDevedor > 0)
-                      .map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.procedimentoNome} — falta {formatarMoeda(p.saldoDevedor)}
-                        </option>
-                      ))}
-                  </select>
-                </Campo>
-                <div className="grid grid-cols-2 gap-3">
-                  <Campo label="Valor (R$)">
-                    <input
-                      className={inputClass}
-                      type="number"
-                      min="0"
-                      value={pagamento.valor}
-                      onChange={(e) => setPagamento({ ...pagamento, valor: e.target.value })}
-                    />
-                  </Campo>
-                  <Campo label="Forma">
-                    <select
-                      className={inputClass}
-                      value={pagamento.formaPagamento}
-                      onChange={(e) =>
-                        setPagamento({ ...pagamento, formaPagamento: e.target.value })
-                      }
-                    >
-                      <option value="pix">Pix</option>
-                      <option value="cartão">Cartão</option>
-                      <option value="dinheiro">Dinheiro</option>
-                    </select>
-                  </Campo>
-                </div>
-                 <Button
-                   variant="secondary"
-                  onClick={pagar}
-                   className="w-full"
-                >
-                  Registrar pagamento
-                 </Button>
               </>
             )}
 
