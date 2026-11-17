@@ -86,6 +86,7 @@ function AreaSecretaria() {
   const [msgAgenda, setMsgAgenda] = useState<{ texto: string; tipo: "erro" | "sucesso" } | null>(null);
   const [msgFin, setMsgFin] = useState<{ texto: string; tipo: "erro" | "sucesso" } | null>(null);
   const [mesFin, setMesFin] = useState(new Date().toISOString().slice(0, 7));
+  const [formaFiltro, setFormaFiltro] = useState("todas");
   const [versaoFin, setVersaoFin] = useState(0);
   const [mes, setMes] = useState(new Date().toISOString().slice(0, 7));
   const [relatorio, setRelatorio] = useState<ReturnType<typeof relatorioMensal> | null>(null);
@@ -109,6 +110,35 @@ function AreaSecretaria() {
   if (!usuario) return null;
   void versaoFin;
   const fin = resumoFinanceiro(mesFin);
+  const meses6 = Array.from({ length: 6 }, (_, i) => {
+    const [a, mm] = mesFin.split("-").map(Number);
+    const d = new Date(a, mm - 1 - (5 - i), 1);
+    const chave = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    const total = fin.pagamentos.filter((pg) => pg.data.startsWith(chave)).reduce((t, pg) => t + pg.valor, 0);
+    return { chave, rotulo: d.toLocaleDateString("pt-BR", { month: "short" }).replace(".", ""), total };
+  });
+  const maxMes = Math.max(1, ...meses6.map((m) => m.total));
+  const pagamentosFiltrados = fin.pagamentos.filter(
+    (pg) => pg.data.startsWith(mesFin) && (formaFiltro === "todas" || pg.formaPagamento === formaFiltro),
+  );
+  const porForma = ["pix", "cartão", "dinheiro"].map((f) => ({
+    f,
+    total: fin.pagamentos.filter((pg) => pg.data.startsWith(mesFin) && pg.formaPagamento === f).reduce((t, pg) => t + pg.valor, 0),
+  }));
+
+  function exportarCSV() {
+    const linhas = [
+      ["Data", "Cliente", "Procedimento", "Forma", "Valor"],
+      ...pagamentosFiltrados.map((pg) => [formatarData(pg.data), pg.nomeCliente, pg.procedimentoNome, pg.formaPagamento, pg.valor.toFixed(2).replace(".", ",")]),
+    ];
+    const csv = "\uFEFF" + linhas.map((l) => l.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(";")).join("\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `financeiro-${mesFin}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   function buscar() {
     setMsgCliente(null);
@@ -261,6 +291,38 @@ function AreaSecretaria() {
               <StatCard label="Em aberto" value={fin.emAberto.length} detail="Pacotes com saldo devedor" icon={<CalendarDays className="h-4 w-4" />} />
             </div>
 
+            <div className="mb-6 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+              <div className="rounded-xl border border-rose-petal/60 bg-blush/40 p-4">
+                <h3 className="mb-4 font-serif text-xl text-ink">Recebido nos últimos 6 meses</h3>
+                <div className="flex h-40 items-end gap-3">
+                  {meses6.map((m) => (
+                    <div key={m.chave} className="flex flex-1 flex-col items-center gap-1.5">
+                      <span className="text-[10px] text-ink/55">{m.total ? formatarMoeda(m.total) : ""}</span>
+                      <div
+                        className={`w-full rounded-t-md transition-all ${m.chave === mesFin ? "bg-orchid" : "bg-petal"}`}
+                        style={{ height: `${Math.max(4, (m.total / maxMes) * 110)}px` }}
+                        title={formatarMoeda(m.total)}
+                      />
+                      <span className="text-xs capitalize text-ink/60">{m.rotulo}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-xl border border-rose-petal/60 bg-blush/40 p-4">
+                <h3 className="mb-4 font-serif text-xl text-ink">Por forma de pagamento</h3>
+                <ul className="space-y-3 text-sm">
+                  {porForma.map(({ f, total }) => (
+                    <li key={f}>
+                      <div className="flex justify-between"><span className="capitalize text-ink">{f}</span><span className="text-ink/70">{formatarMoeda(total)}</span></div>
+                      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-rose-petal/50">
+                        <div className="h-full rounded-full bg-lilac" style={{ width: `${fin.recebidoNoMes ? (total / fin.recebidoNoMes) * 100 : 0}%` }} />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
             <div className="grid items-start gap-6 xl:grid-cols-[1.2fr_1fr]">
               <div>
                 <h3 className="mb-3 font-serif text-xl text-ink">Pacotes com valor em aberto</h3>
@@ -324,12 +386,23 @@ function AreaSecretaria() {
                 </Button>
                 {msgFin && <Mensagem texto={msgFin.texto} tipo={msgFin.tipo} />}
 
-                <h3 className="mt-8 mb-3 font-serif text-xl text-ink">Últimos pagamentos</h3>
-                {fin.pagamentos.length === 0 ? (
-                  <Vazio>Nenhum pagamento registrado.</Vazio>
+                <div className="mt-8 mb-3 flex flex-wrap items-center justify-between gap-2">
+                  <h3 className="font-serif text-xl text-ink">Pagamentos do mês</h3>
+                  <div className="flex gap-2">
+                    <select className={`${inputClass} w-auto py-1.5`} value={formaFiltro} onChange={(e) => setFormaFiltro(e.target.value)} aria-label="Filtrar por forma">
+                      <option value="todas">Todas as formas</option>
+                      <option value="pix">Pix</option>
+                      <option value="cartão">Cartão</option>
+                      <option value="dinheiro">Dinheiro</option>
+                    </select>
+                    <Button size="sm" variant="outline" onClick={exportarCSV} disabled={pagamentosFiltrados.length === 0}>Exportar</Button>
+                  </div>
+                </div>
+                {pagamentosFiltrados.length === 0 ? (
+                  <Vazio>Nenhum pagamento neste mês com esse filtro.</Vazio>
                 ) : (
                   <ul className="max-h-72 divide-y divide-rose-petal/55 overflow-y-auto text-sm">
-                    {fin.pagamentos.slice(0, 20).map((pg) => (
+                    {pagamentosFiltrados.map((pg) => (
                       <li key={pg.id} className="flex items-center justify-between gap-3 py-2.5">
                         <div>
                           <p className="text-ink">{pg.nomeCliente}</p>
