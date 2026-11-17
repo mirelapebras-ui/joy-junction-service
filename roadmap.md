@@ -11,3 +11,6 @@
 - [x] Verificar a página inicial em computador e celular
 - [x] Escrever o README do repositório com apresentação, regras e acessos
 - [x] Testar as regras de negócio: CPF, horário, antecedência, saldo, pagamento e atendimento
+- [ ] Revisar a documentação conforme as exigências do professor e o código atual
+- [ ] Preparar PDF e Word revisados com casos de uso e classes de projeto
+- [ ] Conferir todas as páginas e apontar pendências de entrega
