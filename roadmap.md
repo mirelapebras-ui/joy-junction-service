@@ -9,3 +9,5 @@
 - [x] Criar formulário de contato com revisão da mensagem
 - [x] Usar o e-mail informado pela Mirela para preparar mensagem no aplicativo de e-mail
 - [x] Verificar a página inicial em computador e celular
+- [x] Escrever o README do repositório com apresentação, regras e acessos
+- [x] Testar as regras de negócio: CPF, horário, antecedência, saldo, pagamento e atendimento

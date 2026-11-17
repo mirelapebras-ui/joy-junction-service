@@ -16,12 +16,12 @@ acadêmicos e guarda os dados no próprio navegador (localStorage), sem banco de
 - Acompanha os pacotes que possui e o saldo de sessões
 
 ### Recepção
-- Vê a agenda completa e filtra por dia
-- Cadastra clientes e vende pacotes
+- Vê a agenda geral, com as sessões de todos os profissionais
+- Busca cliente pelo CPF e vende pacotes de sessões
 - Registra pagamentos parciais e acompanha o valor em aberto
 - Consulta o financeiro do mês: recebido, a receber, gráfico dos últimos 6 meses,
   divisão por forma de pagamento e exportação em CSV
-- Cancela ou remarca qualquer sessão, sem a restrição de antecedência
+- Cancela qualquer sessão, mesmo com o horário já passado
 
 ### Profissional
 - Vê a própria agenda
@@ -35,7 +35,7 @@ acadêmicos e guarda os dados no próprio navegador (localStorage), sem banco de
 | CPF único | Não é permitido cadastrar dois clientes com o mesmo CPF |
 | Sem conflito de horário | Um profissional não pode ter duas sessões no mesmo dia e horário |
 | Antecedência de 2 horas | A cliente só remarca ou cancela com pelo menos 2 horas de antecedência |
-| Exceção para a recepção | A recepção pode cancelar ou remarcar a qualquer momento |
+| Exceção para a recepção | A recepção pode cancelar a qualquer momento, mesmo depois do horário |
 | Saldo de pacote | Sessão de pacote só é agendada se houver saldo disponível |
 | Cancelar devolve o saldo | Cancelar sessão de pacote devolve a sessão ao saldo |
 | Pagamento limitado | O pagamento registrado não pode ultrapassar o valor total do pacote |
@@ -115,3 +115,14 @@ Os testes usam o [Bun](https://bun.sh). Com ele instalado, na pasta do projeto:
 ```sh
 bun test src/lib
 ```
+
+`src/lib/db.test.ts` confere as regras de negócio:
+
+- CPF não pode se repetir
+- Um profissional não pode ter duas sessões no mesmo dia e horário
+- A cliente precisa de 2 horas de antecedência para cancelar
+- A recepção pode cancelar mesmo depois do horário
+- Pacote sem saldo não agenda sessão
+- Cancelar sessão de pacote devolve o saldo
+- Pagamento não pode ultrapassar o valor total
+- Só o profissional responsável registra o atendimento
