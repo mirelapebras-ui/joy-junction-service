@@ -19,8 +19,8 @@ const localStorageSimulado = {
     return deposito.size;
   },
 };
-(globalThis as Record<string, unknown>).localStorage = localStorageSimulado;
-(globalThis as Record<string, unknown>).window = globalThis;
+(globalThis as Record<string, unknown>)["localStorage"] = localStorageSimulado;
+(globalThis as Record<string, unknown>)["window"] = globalThis;
 
 import {
   agendarSessaoAvulsa,
