@@ -111,7 +111,7 @@ function AreaSecretaria() {
   void versaoFin;
   const fin = resumoFinanceiro(mesFin);
   const meses6 = Array.from({ length: 6 }, (_, i) => {
-    const [a, mm] = mesFin.split("-").map(Number);
+    const a = Number(mesFin.slice(0, 4)); const mm = Number(mesFin.slice(5, 7));
     const d = new Date(a, mm - 1 - (5 - i), 1);
     const chave = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
     const total = fin.pagamentos.filter((pg) => pg.data.startsWith(chave)).reduce((t, pg) => t + pg.valor, 0);
