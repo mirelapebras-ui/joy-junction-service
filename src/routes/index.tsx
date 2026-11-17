@@ -1,6 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import heroCamelia from "@/assets/camelia-hero.jpg";
 import { CameliaBloom, SiteFooter, SiteNav } from "@/components/camelia";
+import { HomeTestimonials, HomeFaq } from "@/components/home-content";
+import { HomeContact } from "@/components/home-contact";
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -63,66 +67,18 @@ function Index() {
       <SiteNav current="inicio" />
 
       {/* Hero */}
-      <section className="relative overflow-hidden px-6 pt-14 pb-20 md:px-10">
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -top-28 -right-20 h-96 w-96 rounded-full bg-lilac/30 blur-2xl" />
-          <div className="absolute top-52 -left-16 h-72 w-72 rounded-full bg-rose-petal/60 blur-2xl" />
-        </div>
-        <div className="relative mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-2">
-          <div>
-            <span className="inline-block rounded-full bg-lilac/20 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-orchid">
-              Agendamento online
-            </span>
-            <h1 className="mt-5 font-serif text-5xl leading-[1.05] text-ink md:text-6xl">
-              Cuidado que floresce em{" "}
-              <span className="text-orchid italic">você</span>.
-            </h1>
-            <p className="mt-5 max-w-md text-lg text-ink/60">
-              Sessões avulsas ou em pacote, com profissionais especializadas e uma agenda que
-              se organiza sozinha. Marque seu horário em poucos minutos, sem precisar ligar ou
-              esperar resposta no WhatsApp.
-            </p>
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Link
-                to="/acesso"
-                className="rounded-full bg-orchid px-7 py-3.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-mauve"
-              >
-                Agendar meu horário
-              </Link>
-              <Link
-                to="/procedimentos"
-                className="rounded-full bg-rose-petal px-7 py-3.5 text-sm font-medium text-ink transition-colors hover:bg-petal/60"
-              >
-                Ver procedimentos
-              </Link>
-            </div>
-            <dl className="mt-10 grid max-w-md grid-cols-3 gap-4">
-              {[
-                ["3", "profissionais especializadas"],
-                ["7", "dias de agenda aberta"],
-                ["2h", "de antecedência para remarcar"],
-              ].map(([num, label]) => (
-                <div key={label}>
-                  <dt className="font-serif text-3xl text-orchid">{num}</dt>
-                  <dd className="mt-1 text-xs leading-snug text-ink/55">{label}</dd>
-                </div>
-              ))}
-            </dl>
+      <section className="relative isolate overflow-hidden px-6 py-16 md:px-10 md:py-24">
+        <img src={heroCamelia} alt="Sala de atendimento com maca e camélias rosa" width={1200} height={1008} className="absolute inset-0 -z-20 h-full w-full object-cover object-right" />
+        <div className="absolute inset-0 -z-10 bg-blush/85 md:bg-blush/75" />
+        <div className="mx-auto max-w-6xl">
+          <p className="text-xs font-medium uppercase text-orchid">Seu momento de cuidado</p>
+          <h1 className="mt-4 max-w-xl font-serif text-5xl leading-tight md:text-6xl">Camélia<br /><span className="text-orchid italic">Estética</span></h1>
+          <p className="mt-5 max-w-md text-lg leading-relaxed text-ink/80">Cuidado que floresce em você. Uma pausa na rotina para se sentir bem, com o carinho que você merece.</p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Button asChild size="lg" className="h-12"><Link to="/acesso">Agendar meu horário <ArrowRight /></Link></Button>
+            <Button asChild size="lg" variant="outline" className="h-12 bg-card/80"><Link to="/procedimentos">Ver procedimentos</Link></Button>
           </div>
-          <div className="relative">
-            <img
-              src={heroCamelia}
-              alt="Sala de atendimento da Camélia Estética com maca branca, toalhas e camélias rosa"
-              width={1200}
-              height={1008}
-              className="w-full rounded-[2rem] object-cover shadow-xl shadow-mauve/20 outline-1 -outline-offset-1 outline-black/5"
-            />
-            <div className="absolute -bottom-6 -left-4 w-60 rounded-2xl bg-card p-5 shadow-xl shadow-lilac/30 md:-left-8">
-              <p className="text-xs text-ink/50">Próximo horário livre</p>
-              <p className="mt-1 font-serif text-2xl text-ink">Amanhã · 09h00</p>
-              <p className="mt-1 text-xs text-orchid">Limpeza de Pele · Bianca Rocha</p>
-            </div>
-          </div>
+          <p className="mt-8 text-sm text-ink/75">Limpeza de pele · Depilação a laser · Massagem modeladora</p>
         </div>
       </section>
 
@@ -137,7 +93,7 @@ function Index() {
             {passos.map((p) => (
               <div
                 key={p.numero}
-                className="rounded-3xl border border-rose-petal/70 bg-blush p-7 transition-shadow hover:shadow-lg hover:shadow-rose-petal/50"
+                className="rounded-lg border border-rose-petal/70 bg-blush p-7"
               >
                 <span className="font-serif text-3xl text-petal">{p.numero}</span>
                 <h3 className="mt-3 font-serif text-xl text-ink">{p.titulo}</h3>
@@ -165,32 +121,14 @@ function Index() {
                 </div>
               ))}
             </div>
-            <Link
-              to="/procedimentos"
-              className="mt-8 inline-block rounded-full border border-mauve/60 px-6 py-3 text-sm text-ink transition-colors hover:bg-rose-petal/50"
-            >
-              Conhecer os procedimentos
-            </Link>
+            <Button asChild variant="outline" className="mt-8"><Link to="/procedimentos">Conhecer os procedimentos <ArrowRight /></Link></Button>
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="bg-blush px-6 py-20 md:px-10">
-        <div className="mx-auto max-w-4xl rounded-[2rem] bg-ink px-8 py-14 text-center">
-          <h2 className="font-serif text-4xl text-blush">Sua próxima sessão começa aqui</h2>
-          <p className="mx-auto mt-3 max-w-md text-sm text-blush/65">
-            Entre com seu CPF ou crie sua conta em menos de um minuto e escolha o horário que
-            couber na sua rotina.
-          </p>
-          <Link
-            to="/acesso"
-            className="mt-8 inline-block rounded-full bg-petal px-8 py-3.5 text-sm font-medium text-ink transition-colors hover:bg-rose-petal"
-          >
-            Entrar ou criar conta
-          </Link>
-        </div>
-      </section>
+      <HomeTestimonials />
+      <HomeFaq />
+      <HomeContact />
 
       <SiteFooter />
     </div>

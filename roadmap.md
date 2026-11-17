@@ -5,3 +5,7 @@
 - [x] Melhorar agenda e registro da profissional
 - [x] Refinar páginas públicas e padronizar o visual
 - [x] Verificar entradas e fluxos em computador e celular
+- [x] Enriquecer a página inicial com depoimentos ilustrativos e dúvidas frequentes
+- [x] Criar formulário de contato com revisão da mensagem
+- [x] Usar o e-mail informado pela Mirela para preparar mensagem no aplicativo de e-mail
+- [x] Verificar a página inicial em computador e celular

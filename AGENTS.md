@@ -10,3 +10,5 @@
 <!-- LOVABLE:END -->
 
 - As áreas autenticadas compartilham um único shell responsivo com navegação lateral, para manter hierarquia e comportamento consistentes entre cliente, secretaria e profissional.
+- Keep public-home editorial sections and contact presentation in dedicated browser-safe components so homepage changes do not alter scheduling logic.
+- Contact drafts remain in component state and hand off to mailto after review; never report delivery, because the prototype has no messaging service.
