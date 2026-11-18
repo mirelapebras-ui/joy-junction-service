@@ -15,3 +15,5 @@
 - [x] Preparar PDF e Word revisados com casos de uso e modelagem da implementação atual
 - [x] Conferir todas as páginas e apontar pendências de entrega
 - [x] Usar Mirela Petacci Bras na capa da documentação
+- [x] Refazer a documentação com visual delicado e diagramas UML integrados e legíveis
+- [x] Conferir todos os itens do enunciado e entregar PDF e Word versão 3

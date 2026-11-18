@@ -29,3 +29,5 @@ Base: documento de análise enviado por Mirela e orientações do professor em 1
 - Revisão assistida não substitui domínio e autoria da estudante; seguir as regras da disciplina sobre uso de ferramentas.
 - PDF e Word revisados em docs/revisao-sae; 25 páginas conferidas visualmente, com ajustes na capa, ordem dos diagramas e multiplicidades sobrepostas.
 - A modelagem separa interfaces de dados e operações do módulo. Não declara classes OO implementadas; a exigência específica de métodos de instância ainda precisa ser alinhada ao padrão de aula.
+- Versão 3: visual delicado, sumário, rastreabilidade RF→UC, diagramas sem cruzamentos, fluxos numerados e classe de serviço proposta com visibilidade, parâmetros e retornos. PDF e Word conferidos página a página.
+- Checklist inclui acesso ao professor (EullerF), prazo, vídeo pendente, envio ao GitHub e regras de formação/commits.
