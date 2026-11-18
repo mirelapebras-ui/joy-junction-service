@@ -21,7 +21,7 @@ Base: documento de análise enviado por Mirela e orientações do professor em 1
 - Nenhuma mudança funcional no site nesta revisão; a documentação descreve a implementação existente.
 
 ## Entrega e limitações
-- Confirmar nomes completos da capa; versão inicial usa Mirela Bras.
+- Nome confirmado da integrante para a capa: Mirela Petacci Bras.
 - Vídeo MP4 de até 1 minuto ainda deve ser gravado pela estudante.
 - Conferir os commits e enviar a documentação revisada ao repositório da estudante; o repositório daqui é separado.
 - Trabalho individual ou dupla; em dupla, ambos precisam de commits reais.

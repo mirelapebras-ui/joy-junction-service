@@ -14,3 +14,4 @@
 - [ ] Revisar a documentação conforme as exigências do professor e o código atual
 - [ ] Preparar PDF e Word revisados com casos de uso e classes de projeto
 - [ ] Conferir todas as páginas e apontar pendências de entrega
+- [ ] Usar Mirela Petacci Bras na capa da documentação
