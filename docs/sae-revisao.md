@@ -16,7 +16,7 @@ Base: documento de análise enviado por Mirela e orientações do professor em 1
 
 ## Evidências conferidas
 - Código de todas as regras em src/lib/db.ts e telas de cliente, secretária e profissional.
-- 14 testes aprovados em 17/11/2026: 13 de negócio e 1 de contato.
+- 14 testes aprovados novamente em 18/11/2026: 13 de negócio e 1 de contato.
 - Repositório público acessível: https://github.com/mirelapebras-ui/estetica-git.
 - Nenhuma mudança funcional no site nesta revisão; a documentação descreve a implementação existente.
 
@@ -27,3 +27,5 @@ Base: documento de análise enviado por Mirela e orientações do professor em 1
 - Trabalho individual ou dupla; em dupla, ambos precisam de commits reais.
 - Prazo informado: 18/11/2026 às 21h00. Enviar pelo BB.
 - Revisão assistida não substitui domínio e autoria da estudante; seguir as regras da disciplina sobre uso de ferramentas.
+- PDF e Word revisados em docs/revisao-sae; 25 páginas conferidas visualmente, com ajustes na capa, ordem dos diagramas e multiplicidades sobrepostas.
+- A modelagem separa interfaces de dados e operações do módulo. Não declara classes OO implementadas; a exigência específica de métodos de instância ainda precisa ser alinhada ao padrão de aula.
